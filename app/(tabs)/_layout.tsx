@@ -1,67 +1,137 @@
-import React from "react";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { Link, Tabs } from "expo-router";
-import { Pressable } from "react-native";
-
+import React, { useEffect } from "react";
+import { Tabs, useRouter, useSegments } from "expo-router";
+import { useAuth } from "@/providers/AuthProvider";
+import {
+    AntDesign,
+    Feather,
+    FontAwesome,
+    Ionicons,
+    MaterialCommunityIcons,
+    MaterialIcons,
+    Octicons,
+} from "@expo/vector-icons";
+import { TouchableOpacity } from "react-native";
 import Colors from "@/constants/Colors";
-import { useColorScheme } from "@/components/useColorScheme";
-import { useClientOnlyValue } from "@/components/useClientOnlyValue";
-
-// You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
-function TabBarIcon(props: {
-    name: React.ComponentProps<typeof FontAwesome>["name"];
-    color: string;
-}) {
-    return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
-}
 
 export default function TabLayout() {
-    const colorScheme = useColorScheme();
+    const segments = useSegments();
+    const { session } = useAuth();
+    const router = useRouter();
+
+    useEffect(() => {
+        if (!session && segments[1] === "(auth)") {
+            router.replace("/");
+        }
+    }, [segments[1], session]);
 
     return (
         <Tabs
             screenOptions={{
-                tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
-                // Disable the static render of the header on web
-                // to prevent a hydration error in React Navigation v6.
-                headerShown: useClientOnlyValue(false, true),
+                tabBarActiveTintColor: Colors.dark,
+                tabBarInactiveTintColor: Colors.grey,
+                tabBarShowLabel: false,
             }}
         >
             <Tabs.Screen
-                name="index"
+                name="(public)/index"
                 options={{
-                    title: "Tab One",
-                    tabBarIcon: ({ color }) => (
-                        <TabBarIcon name="code" color={color} />
-                    ),
-                    headerRight: () => (
-                        <Link href="/modal" asChild>
-                            <Pressable>
-                                {({ pressed }) => (
-                                    <FontAwesome
-                                        name="info-circle"
-                                        size={25}
-                                        color={
-                                            Colors[colorScheme ?? "light"].text
-                                        }
-                                        style={{
-                                            marginRight: 15,
-                                            opacity: pressed ? 0.5 : 1,
-                                        }}
-                                    />
-                                )}
-                            </Pressable>
-                        </Link>
+                    headerShown: false,
+                    tabBarLabel: "Explore",
+                    tabBarIcon: ({ color, size }) => (
+                        <Octicons name="home" size={size} color={color} />
                     ),
                 }}
             />
             <Tabs.Screen
-                name="two"
+                name="(auth)/search"
                 options={{
-                    title: "Tab Two",
-                    tabBarIcon: ({ color }) => (
-                        <TabBarIcon name="code" color={color} />
+                    headerShown: false,
+                    tabBarLabel: "Search",
+                    tabBarIcon: ({ color, size }) => (
+                        <Ionicons name="search" size={size} color={color} />
                     ),
+                }}
+                listeners={{
+                    tabPress: (e) => {
+                        e.preventDefault();
+                        if (!session) {
+                            router.push("/(modals)/login");
+                        } else {
+                            router.push("/search");
+                        }
+                    },
+                }}
+            />
+            <Tabs.Screen
+                name="(auth)/new-post-tab"
+                options={{
+                    headerShown: false,
+                    tabBarLabel: "New Post",
+                    tabBarIcon: ({ color, size }) => (
+                        <TouchableOpacity>
+                            <Feather
+                                name="plus-square"
+                                size={size}
+                                color={color}
+                            />
+                        </TouchableOpacity>
+                    ),
+                }}
+                listeners={{
+                    tabPress: (e) => {
+                        e.preventDefault();
+                        if (!session) {
+                            router.push("/(modals)/login");
+                        }
+                    },
+                }}
+            />
+            <Tabs.Screen
+                name="(auth)/history"
+                options={{
+                    headerShown: false,
+                    tabBarLabel: "History Files",
+                    tabBarIcon: ({ color, size }) => (
+                        <MaterialIcons
+                            name="history"
+                            size={size}
+                            color={color}
+                        />
+                    ),
+                }}
+                listeners={{
+                    tabPress: (e) => {
+                        e.preventDefault();
+                        if (!session) {
+                            router.push("/(modals)/login");
+                        } else {
+                            router.push("/history");
+                        }
+                    },
+                }}
+            />
+            <Tabs.Screen
+                name="(auth)/my-profile"
+                options={{
+                    headerShown: false,
+                    tabBarLabel: "Profile",
+                    tabBarIcon: ({ size, color }) => (
+                        <MaterialCommunityIcons
+                            name="account"
+                            size={size}
+                            color={color}
+                        />
+                    ),
+                }}
+                listeners={{
+                    tabPress: (e) => {
+                        e.preventDefault();
+                        if (!session) {
+                            router.push("/(modals)/login");
+                        } else {
+                            router.push("/my-profile");
+                        }
+                    },
                 }}
             />
         </Tabs>
