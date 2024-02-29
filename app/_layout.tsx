@@ -101,6 +101,13 @@ function RootLayoutNav() {
                     headerShown: false,
                 }}
             />
+            <Stack.Screen
+                name="(modals)/onboarding-firstname"
+                options={{
+                    animation: "slide_from_right",
+                    headerShown: false,
+                }}
+            />
         </Stack>
     );
 }

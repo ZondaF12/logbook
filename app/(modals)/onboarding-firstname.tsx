@@ -1,26 +1,26 @@
-import React, { useEffect, useState } from "react";
 import {
     View,
     Text,
+    useWindowDimensions,
+    KeyboardAvoidingView,
     TextInput,
     TouchableOpacity,
     ActivityIndicator,
-    KeyboardAvoidingView,
-    useWindowDimensions,
 } from "react-native";
-import { useForm, Controller, SubmitHandler } from "react-hook-form";
+import React, { useState } from "react";
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { useRouter } from "expo-router";
-import { Theme } from "@/constants/Styles";
-import Colors from "@/constants/Colors";
-import Animated, { FadeInLeft } from "react-native-reanimated";
 import { useAuth } from "@/providers/AuthProvider";
+import { Theme } from "@/constants/Styles";
+import Animated, { FadeInLeft } from "react-native-reanimated";
+import Colors from "@/constants/Colors";
 import { supabase } from "@/lib/supabase";
 
 type FormInputs = {
-    username: string;
+    firstname: string;
 };
 
-const OnboardingUsername = () => {
+const OnboardingFirstname = () => {
     const { session } = useAuth();
 
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -37,7 +37,7 @@ const OnboardingUsername = () => {
         clearErrors,
     } = useForm<FormInputs>({
         defaultValues: {
-            username: "",
+            firstname: "",
         },
     });
 
@@ -45,27 +45,23 @@ const OnboardingUsername = () => {
         setIsSubmitting(true);
         setError(null);
         try {
-            const { count, error } = await supabase
-                .from("users")
-                .select("*", { count: "exact", head: true })
-                .eq("username", data.username);
-
-            if (count === 0) {
+            if (data.firstname !== "") {
                 const { error } = await supabase
                     .from("users")
-                    .insert({ username: data.username });
+                    .update({ name: data.firstname })
+                    .eq("user_id", session?.user?.id);
 
                 if (!error) {
                     setIsSubmitting(false);
-                    router.push("/onboarding-firstname");
+                    router.push("/");
                 }
-
-                console.log(error);
             }
-
-            // router.push("/onboarding/profile");
         } catch (err: any) {
-            setError(err.response.data.message);
+            if (err.response.data.statusCode === 409) {
+                setError(err.response.data.message);
+            } else {
+                setError("Something went wrong");
+            }
 
             setIsSubmitting(false);
         }
@@ -102,7 +98,7 @@ const OnboardingUsername = () => {
                         entering={FadeInLeft.springify().delay(200)}
                         style={Theme.BodyText}
                     >
-                        Step 1 of 2
+                        Step 2 of 2
                     </Animated.Text>
                 </View>
                 <View
@@ -113,27 +109,17 @@ const OnboardingUsername = () => {
                         marginBottom: 15,
                     }}
                 >
-                    <Text style={Theme.BigTitle}>Choose your username</Text>
+                    <Text style={Theme.BigTitle}>What's your first name?</Text>
                 </View>
 
                 <Controller
                     control={control}
                     rules={{
-                        required: "Username is required",
+                        required: "First name is required",
                         pattern: {
-                            value: /^[A-Za-z0-9._%+-]{3,15}$/i,
+                            value: /^[a-z ,.'-]+$/i,
                             message:
-                                "Invalid username. It should only include letters, numbers, full stops, hyphens, and underscores.",
-                        },
-                        minLength: {
-                            value: 3,
-                            message:
-                                "Username must be at least 3 characters long",
-                        },
-                        maxLength: {
-                            value: 15,
-                            message:
-                                "Username must be at most 15 characters long",
+                                "Invalid first name. It should only include letters.",
                         },
                     }}
                     render={({ field: { onChange, onBlur, value } }) => (
@@ -141,27 +127,26 @@ const OnboardingUsername = () => {
                             autoComplete="off"
                             autoCorrect={false}
                             spellCheck={false}
-                            placeholder={"username"}
+                            placeholder={"eg. Jessica"}
                             placeholderTextColor={Colors.grey}
-                            autoCapitalize={"none"}
                             style={[
                                 Theme.InputStyle,
-                                errors.username
+                                errors.firstname
                                     ? { borderColor: "red", borderWidth: 1 }
                                     : null,
                             ]}
                             onBlur={onBlur}
                             onChangeText={(text) =>
-                                onChange(text.replace(/\s/g, "").toLowerCase())
+                                onChange(text.replace(/\s/g, ""))
                             }
                             value={value}
                         />
                     )}
-                    name="username"
+                    name="firstname"
                 />
-                {errors.username && (
+                {errors.firstname && (
                     <Text style={[Theme.Caption, { color: "red" }]}>
-                        {errors.username.message}
+                        {errors.firstname.message}
                     </Text>
                 )}
 
@@ -190,7 +175,7 @@ const OnboardingUsername = () => {
                                 lineHeight: 50,
                             }}
                         >
-                            {"Check availability"}
+                            {"Let's get started"}
                         </Text>
                     )}
                 </TouchableOpacity>
@@ -214,4 +199,4 @@ const OnboardingUsername = () => {
     );
 };
 
-export default OnboardingUsername;
+export default OnboardingFirstname;

@@ -9,6 +9,7 @@ import {
     useState,
 } from "react";
 import * as AppleAuthentication from "expo-apple-authentication";
+import { set } from "react-hook-form";
 
 type AuthData = {
     session: Session | null;
@@ -27,6 +28,7 @@ const AuthContext = createContext<AuthData>({
 export default function AuthProvider({ children }: PropsWithChildren) {
     const [session, setSession] = useState<Session | null>(null);
     const [loading, setLoading] = useState(true);
+    const [user, setUser] = useState<any>(null);
     const router = useRouter();
     const pathname = usePathname();
 
@@ -92,13 +94,62 @@ export default function AuthProvider({ children }: PropsWithChildren) {
         await supabase.auth.signOut();
     };
 
-    useEffect(() => {
-        if (!session) {
-            if (pathname !== "/login") {
-                router.replace("/login");
-            }
+    const isNewUserFunc = async () => {
+        const { data, error } = await supabase
+            .from("users")
+            .select()
+            .eq("user_id", session?.user?.id);
+
+        if (error) {
+            console.log(error);
         }
+
+        if (data?.length === 0) {
+            return true;
+        }
+    };
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            const { data, error } = await supabase
+                .from("users")
+                .select()
+                .eq("user_id", session?.user?.id);
+
+            if (!error) {
+                setUser(data[0]);
+            }
+        };
+
+        fetchUser();
     }, [session]);
+
+    useEffect(() => {
+        const routingCheck = async () => {
+            if (session) {
+                if (user.username === null || user.username === "") {
+                    if (pathname !== "/onboarding-username") {
+                        router.push("/onboarding-username");
+                    }
+                } else if (user.name === null || user.name === "") {
+                    console.log("USER");
+
+                    if (pathname !== "/onboarding-firstname") {
+                        router.push("/onboarding-firstname");
+                    }
+                } else {
+                    if (pathname !== "/") {
+                        router.push("/");
+                    }
+                }
+            } else {
+                if (pathname !== "/login") {
+                    router.replace("/login");
+                }
+            }
+        };
+        routingCheck();
+    }, [user]);
 
     return (
         <AuthContext.Provider value={{ session, loading, logout, appleLogin }}>
