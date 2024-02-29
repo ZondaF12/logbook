@@ -127,13 +127,11 @@ export default function AuthProvider({ children }: PropsWithChildren) {
     useEffect(() => {
         const routingCheck = async () => {
             if (session) {
-                if (user.username === null || user.username === "") {
+                if (user === undefined || user === null) {
                     if (pathname !== "/onboarding-username") {
                         router.push("/onboarding-username");
                     }
                 } else if (user.name === null || user.name === "") {
-                    console.log("USER");
-
                     if (pathname !== "/onboarding-firstname") {
                         router.push("/onboarding-firstname");
                     }

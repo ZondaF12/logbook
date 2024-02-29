@@ -1,5 +1,10 @@
 import React, { useEffect } from "react";
-import { Tabs, useRouter, useSegments } from "expo-router";
+import {
+    Tabs,
+    useRootNavigationState,
+    useRouter,
+    useSegments,
+} from "expo-router";
 import { useAuth } from "@/providers/AuthProvider";
 import {
     AntDesign,
@@ -18,9 +23,12 @@ export default function TabLayout() {
     const { session } = useAuth();
     const router = useRouter();
 
+    const rootNavigationState = useRootNavigationState();
+    if (!rootNavigationState?.key) return null;
+
     useEffect(() => {
         if (!session && segments[1] === "(auth)") {
-            router.replace("/");
+            router.replace("/login");
         }
     }, [segments[1], session]);
 
@@ -33,7 +41,7 @@ export default function TabLayout() {
             }}
         >
             <Tabs.Screen
-                name="(public)/index"
+                name="(auth)/index"
                 options={{
                     headerShown: false,
                     tabBarLabel: "Explore",
