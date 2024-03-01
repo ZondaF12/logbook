@@ -125,6 +125,10 @@ function RootLayoutNav() {
                 name="new-vehicle/[id]"
                 options={{ headerShown: false }}
             />
+            <Stack.Screen
+                name="vehicle-details/[id]"
+                options={{ headerShown: false, presentation: "modal" }}
+            />
         </Stack>
     );
 }

@@ -92,11 +92,11 @@ const NewVehicle = () => {
                 });
 
             if (data) {
-                const { data: url } = await supabase.storage
+                const { data: url, error } = await supabase.storage
                     .from("vehicleimages")
-                    .getPublicUrl(filePath);
+                    .createSignedUrl(filePath, 600000000000);
 
-                return url.publicUrl;
+                return url?.signedUrl;
             }
         } catch (error) {
             console.warn(error);
@@ -195,6 +195,8 @@ const NewVehicle = () => {
     const dimensions = useWindowDimensions();
 
     const onSubmit: SubmitHandler<any> = async (values) => {
+        console.log(values.images[0]);
+
         const newVehicle = {
             registration: id,
             model: values.model,

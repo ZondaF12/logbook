@@ -1,6 +1,12 @@
-import { View, Text, SafeAreaView, TouchableOpacity } from "react-native";
-import React from "react";
-import Animated, { FadeInLeft } from "react-native-reanimated";
+import {
+    View,
+    Text,
+    SafeAreaView,
+    TouchableOpacity,
+    LayoutAnimation,
+} from "react-native";
+import React, { useState } from "react";
+import Animated, { FadeInLeft, FadeOutLeft } from "react-native-reanimated";
 import { Theme } from "@/constants/Styles";
 import Colors from "@/constants/Colors";
 import { router } from "expo-router";
@@ -8,8 +14,13 @@ import { useAuth } from "@/providers/AuthProvider";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import Loader from "@/components/Loader/Loader";
+import { StatusBar } from "expo-status-bar";
+import { FlashList } from "@shopify/flash-list";
+import MyVehicle from "@/components/Garage/MyVehicle";
 
 const index = () => {
+    const [findHeight, setFindHeight] = useState<number | undefined>(undefined);
+
     const { session } = useAuth();
 
     const fetchUserVehicle = async () => {
@@ -21,7 +32,7 @@ const index = () => {
         return data;
     };
 
-    const { data, isLoading, error } = useQuery({
+    const { data, isLoading, error, isError, refetch } = useQuery({
         queryKey: ["user_vehicles"],
         queryFn: fetchUserVehicle,
     });
@@ -30,17 +41,93 @@ const index = () => {
         return <Loader />;
     }
 
+    if (isError) {
+        return <Text style={{ paddingTop: 100 }}>{error.message}</Text>;
+    }
+
     return (
-        <SafeAreaView>
+        <View style={{ flex: 1, gap: 15 }}>
+            <SafeAreaView />
+            <StatusBar style="dark" />
+
             <View
                 style={{
                     paddingHorizontal: 15,
-                    gap: 5,
-                    paddingTop: 15,
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
                 }}
             >
-                {data ? (
-                    <View></View>
+                <Animated.Text
+                    entering={FadeInLeft.springify()}
+                    exiting={FadeOutLeft}
+                    style={Theme.Logo}
+                >
+                    garage
+                </Animated.Text>
+            </View>
+
+            <View
+                style={Theme.Container}
+                onLayout={(e) => {
+                    if (findHeight) {
+                        e.nativeEvent.layout.height < findHeight &&
+                            setFindHeight(e.nativeEvent.layout.height / 2.5);
+                    } else {
+                        LayoutAnimation.configureNext(
+                            LayoutAnimation.Presets.easeInEaseOut
+                        );
+                        setFindHeight(e.nativeEvent.layout.height / 2.5);
+                    }
+                }}
+            >
+                {data && data?.length > 0 ? (
+                    <View
+                        style={{
+                            borderTopLeftRadius: 10,
+                            borderTopRightRadius: 10,
+                            overflow: "hidden",
+                            flexGrow: 1,
+                        }}
+                    >
+                        <FlashList
+                            ListFooterComponent={
+                                <View
+                                    style={{
+                                        height: 40,
+                                        width: "100%",
+                                        display: "flex",
+                                        alignItems: "center",
+                                    }}
+                                >
+                                    <Text
+                                        style={[
+                                            Theme.BodyText,
+                                            { color: Colors.grey },
+                                        ]}
+                                    >
+                                        You're up to date!
+                                    </Text>
+                                </View>
+                            }
+                            decelerationRate={"fast"}
+                            viewabilityConfig={{
+                                itemVisiblePercentThreshold: 80,
+                            }}
+                            onRefresh={() => refetch()}
+                            refreshing={isLoading}
+                            data={data}
+                            keyExtractor={(item) => item.id.toString()}
+                            showsVerticalScrollIndicator={false}
+                            renderItem={({ item }) => (
+                                <MyVehicle
+                                    vehicle={item}
+                                    vehicleHeight={findHeight! - 40}
+                                />
+                            )}
+                        />
+                    </View>
                 ) : (
                     <View
                         style={{
@@ -97,7 +184,7 @@ const index = () => {
                     </View>
                 )}
             </View>
-        </SafeAreaView>
+        </View>
     );
 };
 
