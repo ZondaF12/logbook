@@ -4,6 +4,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import * as Updates from "expo-updates";
 import AuthProvider, { useAuth } from "@/providers/AuthProvider";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 export {
     // Catch any errors thrown by the Layout component.
@@ -17,6 +18,9 @@ export const unstable_settings = {
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
+
+// Create a client
+const queryClient = new QueryClient();
 
 export default function RootLayout() {
     const [loaded, error] = useFonts({
@@ -43,9 +47,11 @@ export default function RootLayout() {
     }
 
     return (
-        <AuthProvider>
-            <RootLayoutNav />
-        </AuthProvider>
+        <QueryClientProvider client={queryClient}>
+            <AuthProvider>
+                <RootLayoutNav />
+            </AuthProvider>
+        </QueryClientProvider>
     );
 }
 
@@ -107,6 +113,17 @@ function RootLayoutNav() {
                     animation: "slide_from_right",
                     headerShown: false,
                 }}
+            />
+            <Stack.Screen
+                name="new-vehicle/registration"
+                options={{
+                    headerShown: false,
+                    animation: "slide_from_bottom",
+                }}
+            />
+            <Stack.Screen
+                name="new-vehicle/[id]"
+                options={{ headerShown: false }}
             />
         </Stack>
     );

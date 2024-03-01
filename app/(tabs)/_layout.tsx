@@ -74,9 +74,13 @@ export default function TabLayout() {
                 name="(auth)/new-post-tab"
                 options={{
                     headerShown: false,
-                    tabBarLabel: "New Post",
+                    tabBarLabel: "Add Vehicle",
                     tabBarIcon: ({ color, size }) => (
-                        <TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={() =>
+                                router.push("/new-vehicle/registration")
+                            }
+                        >
                             <Feather
                                 name="plus-square"
                                 size={size}
@@ -84,14 +88,6 @@ export default function TabLayout() {
                             />
                         </TouchableOpacity>
                     ),
-                }}
-                listeners={{
-                    tabPress: (e) => {
-                        e.preventDefault();
-                        if (!session) {
-                            router.push("/(modals)/login");
-                        }
-                    },
                 }}
             />
             <Tabs.Screen
