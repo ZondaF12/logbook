@@ -66,7 +66,7 @@ const Login = () => {
                             },
                         ]}
                     >
-                        pocket garage
+                        fleet
                     </Text>
 
                     <AppleAuthentication.AppleAuthenticationButton
