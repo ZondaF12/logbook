@@ -129,6 +129,10 @@ function RootLayoutNav() {
                 name="vehicle-details/[id]"
                 options={{ headerShown: false, presentation: "modal" }}
             />
+            <Stack.Screen
+                name="vehicle-details/set-description/[id]"
+                options={{ headerShown: false, presentation: "modal" }}
+            />
         </Stack>
     );
 }

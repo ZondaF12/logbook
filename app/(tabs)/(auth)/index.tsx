@@ -107,7 +107,11 @@ const index = () => {
                                             { color: Colors.grey },
                                         ]}
                                     >
-                                        You're up to date!
+                                        {data.length}{" "}
+                                        {data.length > 1
+                                            ? "Vehicles"
+                                            : "Vehicle"}{" "}
+                                        in your garage
                                     </Text>
                                 </View>
                             }

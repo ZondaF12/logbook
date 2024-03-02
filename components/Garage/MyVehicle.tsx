@@ -15,21 +15,10 @@ interface MyVehicleProps {
 
 const MyVehicle = ({ vehicle, vehicleHeight }: MyVehicleProps) => {
     const router = useRouter();
-    const { session } = useAuth();
 
     const bottomOffset = 15;
-    const descriptionCardHeight = 100;
+    const descriptionCardHeight = 75;
     const imageheight = vehicleHeight - descriptionCardHeight - bottomOffset;
-
-    const handleGoToProfile = () => {
-        // if (session) {
-        //     session.profile.id === find.user.id
-        //         ? router.push("/(tabs)/(auth)/my-profile")
-        //         : router.push(`/profile/${find.user.id}`);
-        // } else {
-        //     router.push(`/profile/${find.user.id}`);
-        // }
-    };
 
     const onPressCallback = () => {
         router.push({
@@ -68,7 +57,7 @@ const MyVehicle = ({ vehicle, vehicleHeight }: MyVehicleProps) => {
                         images={vehicle.images}
                         height={imageheight}
                         onPressCallback={onPressCallback}
-                        isSwipable
+                        isSwipable={vehicle.images.length > 1}
                     />
 
                     <View
@@ -83,12 +72,20 @@ const MyVehicle = ({ vehicle, vehicleHeight }: MyVehicleProps) => {
                             height: descriptionCardHeight,
                         }}
                     >
-                        <View style={{ gap: 10 }}>
+                        <View
+                            style={{
+                                gap: 10,
+                                display: "flex",
+                                flexDirection: "row",
+                                justifyContent: "space-between",
+                            }}
+                        >
                             <View
                                 style={{
                                     display: "flex",
                                     gap: 5,
-                                    justifyContent: "space-between",
+                                    alignItems: "center",
+                                    justifyContent: "center",
                                 }}
                             >
                                 <Text numberOfLines={1} style={Theme.Title}>
@@ -100,6 +97,7 @@ const MyVehicle = ({ vehicle, vehicleHeight }: MyVehicleProps) => {
                                 style={{
                                     display: "flex",
                                     gap: 5,
+                                    justifyContent: "center",
                                 }}
                             >
                                 <Text
