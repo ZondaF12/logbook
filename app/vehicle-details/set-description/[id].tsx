@@ -21,7 +21,10 @@ type FormInputs = {
 };
 
 const SetDescription = () => {
-    const { id } = useLocalSearchParams<{ id: string }>();
+    const { id, description: setDescription } = useLocalSearchParams<{
+        id: string;
+        description: string;
+    }>();
 
     const { session } = useAuth();
 
@@ -39,7 +42,7 @@ const SetDescription = () => {
         clearErrors,
     } = useForm<FormInputs>({
         defaultValues: {
-            description: "",
+            description: setDescription || "",
         },
     });
 

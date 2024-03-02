@@ -458,11 +458,36 @@ const VehicleDetails = () => {
                                 },
                             ]}
                         >
-                            <View>
+                            <View
+                                style={{
+                                    flexDirection: "row",
+                                    justifyContent: "space-between",
+                                }}
+                            >
                                 <Text style={[Theme.BigTitle]}>
                                     Description
                                 </Text>
+                                {vehicle[0]?.description && (
+                                    <TouchableOpacity
+                                        onPress={() => {
+                                            router.push({
+                                                pathname: `/vehicle-details/set-description/${id}`,
+                                                params: {
+                                                    description:
+                                                        vehicle[0]?.description,
+                                                },
+                                            });
+                                        }}
+                                    >
+                                        <Feather
+                                            name="edit-3"
+                                            size={25}
+                                            color={Colors.dark}
+                                        />
+                                    </TouchableOpacity>
+                                )}
                             </View>
+
                             <View>
                                 {vehicle[0]?.description ? (
                                     <Text style={Theme.BodyText}>
