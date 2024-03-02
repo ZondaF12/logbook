@@ -24,6 +24,7 @@
     "base64-arraybuffer": "^1.0.2",
     "expo": "~50.0.8",
     "expo-apple-authentication": "~6.3.0",
+    "expo-application": "^5.8.3",
     "expo-dev-client": "~3.3.9",
     "expo-font": "~11.10.3",
     "expo-image-manipulator": "~11.8.0",

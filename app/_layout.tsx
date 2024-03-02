@@ -133,6 +133,14 @@ function RootLayoutNav() {
                 name="vehicle-details/set-description/[id]"
                 options={{ headerShown: false, presentation: "modal" }}
             />
+            <Stack.Screen
+                name="edit-profile/[id]"
+                options={{ headerShown: false, presentation: "modal" }}
+            />
+            <Stack.Screen
+                name="profile/[id]"
+                options={{ headerShown: false }}
+            />
         </Stack>
     );
 }
