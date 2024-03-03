@@ -101,10 +101,12 @@ const EditProfile = () => {
                 style={[
                     Theme.Container,
                     {
-                        justifyContent: "center",
+                        // justifyContent: "center",
                         gap: 10,
                         backgroundColor: "#FFF",
                         width: dimensions.width,
+                        paddingHorizontal: 15,
+                        paddingTop: 30,
                     },
                 ]}
             >
@@ -119,35 +121,9 @@ const EditProfile = () => {
                     <Text style={Theme.BigTitle}>Edit User</Text>
                 </View>
 
-                <Controller
-                    control={control}
-                    render={({ field: { onChange, onBlur, value } }) => (
-                        <View
-                            style={{
-                                flexDirection: "row",
-                                alignItems: "center",
-                            }}
-                        >
-                            <Text style={[Theme.BodyText]}>
-                                Profile Public?
-                            </Text>
-                            <CheckBox
-                                checked={isPublic}
-                                onPress={toggleIsPublic}
-                                iconType="material-community"
-                                checkedIcon="checkbox-outline"
-                                uncheckedIcon={"checkbox-blank-outline"}
-                            />
-                        </View>
-                    )}
-                    name="public"
-                />
-                {errors.public && (
-                    <Text style={[Theme.Caption, { color: "red" }]}>
-                        {errors.public.message}
-                    </Text>
-                )}
-
+                <View style={{ gap: 10, marginTop: 5 }}>
+                    <Text style={Theme.Title}>Name</Text>
+                </View>
                 <Controller
                     control={control}
                     rules={{
@@ -190,6 +166,12 @@ const EditProfile = () => {
                     </Text>
                 )}
 
+                <View style={{ gap: 10, marginTop: 5 }}>
+                    <Text style={Theme.Title}>Bio</Text>
+                    <Text style={Theme.Caption}>
+                        Tell others a bit about yourself!
+                    </Text>
+                </View>
                 <Controller
                     control={control}
                     render={({ field: { onChange, onBlur, value } }) => (
@@ -227,6 +209,85 @@ const EditProfile = () => {
                 {errors.bio && (
                     <Text style={[Theme.Caption, { color: "red" }]}>
                         {errors.bio.message}
+                    </Text>
+                )}
+
+                <View style={{ gap: 10, marginTop: 5 }}>
+                    <Text style={Theme.Title}>Public</Text>
+                    <Text style={Theme.Caption}>
+                        Set the visibility of your profile
+                    </Text>
+                </View>
+                <Controller
+                    control={control}
+                    render={({ field: { onChange, onBlur, value } }) => (
+                        <View
+                            style={{
+                                display: "flex",
+                                flexDirection: "row",
+                                gap: 10,
+                                alignItems: "center",
+                            }}
+                        >
+                            <TouchableOpacity
+                                onPress={() => setIsPublic(true)}
+                                style={{
+                                    backgroundColor: isPublic
+                                        ? Colors.dark
+                                        : Colors.light,
+                                    borderWidth: isPublic ? 0 : 1,
+                                    borderColor: Colors.grey,
+                                    padding: 10,
+                                    borderRadius: 99,
+                                }}
+                            >
+                                <Text
+                                    style={[
+                                        Theme.Caption,
+                                        {
+                                            color: isPublic
+                                                ? Colors.light
+                                                : Colors.grey,
+                                        },
+                                    ]}
+                                >
+                                    Public
+                                </Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    setIsPublic(false);
+                                }}
+                                style={{
+                                    backgroundColor: !isPublic
+                                        ? Colors.dark
+                                        : Colors.light,
+                                    borderWidth: !isPublic ? 0 : 1,
+                                    borderColor: Colors.grey,
+                                    padding: 10,
+                                    borderRadius: 99,
+                                }}
+                            >
+                                <Text
+                                    style={[
+                                        Theme.Caption,
+                                        {
+                                            color: !isPublic
+                                                ? Colors.light
+                                                : Colors.grey,
+                                        },
+                                    ]}
+                                >
+                                    Private
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
+                    name="public"
+                />
+                {errors.public && (
+                    <Text style={[Theme.Caption, { color: "red" }]}>
+                        {errors.public.message}
                     </Text>
                 )}
 
