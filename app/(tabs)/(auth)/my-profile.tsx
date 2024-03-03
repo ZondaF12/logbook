@@ -346,9 +346,13 @@ const MyProfile = () => {
                             </View>
                         </View>
                     </View>
-                    {profile?.bio && (
+                    {profile?.bio ? (
                         <Text style={[Theme.BodyText, { color: Colors.grey }]}>
                             {profile.bio}
+                        </Text>
+                    ) : (
+                        <Text style={[Theme.BodyText, { color: Colors.grey }]}>
+                            ahhhhh
                         </Text>
                     )}
                 </View>
@@ -416,114 +420,128 @@ const MyProfile = () => {
                 </Animated.View>
             </View>
 
-            <Animated.View
-                entering={FadeInLeft.springify().delay(50)}
+            <View
                 style={{
                     flex: 1,
                     paddingVertical: 15,
-                    gap: 15,
-                    marginTop: 15,
                 }}
             >
-                <View style={{ gap: 15 }}>
-                    <Text style={[Theme.Title, { paddingHorizontal: 15 }]}>
-                        Account
-                    </Text>
-                    <TouchableOpacity style={{ gap: 15 }}>
-                        <Text
-                            style={[Theme.BodyText, { paddingHorizontal: 15 }]}
-                        >
-                            Login with Face ID
+                <Animated.View
+                    entering={FadeInLeft.delay(50)}
+                    style={{
+                        flex: 1,
+                        gap: 15,
+                    }}
+                >
+                    <View style={{ gap: 15 }}>
+                        <Text style={[Theme.Title, { paddingHorizontal: 15 }]}>
+                            Account
                         </Text>
-                        <Divider />
-                    </TouchableOpacity>
-                </View>
-                <View style={{ gap: 15 }}>
-                    <Text style={[Theme.Title, { paddingHorizontal: 15 }]}>
-                        Legal
-                    </Text>
-                    <TouchableOpacity style={{ gap: 15 }}>
-                        <Text
-                            style={[Theme.BodyText, { paddingHorizontal: 15 }]}
-                        >
-                            Terms and Conditions
-                        </Text>
-                        <Divider />
-                    </TouchableOpacity>
-                    <TouchableOpacity style={{ gap: 15 }}>
-                        <Text
-                            style={[Theme.BodyText, { paddingHorizontal: 15 }]}
-                        >
-                            Privacy Policy
-                        </Text>
-                        <Divider />
-                    </TouchableOpacity>
-                </View>
-                <View style={{ gap: 15 }}>
-                    <Text style={[Theme.Title, { paddingHorizontal: 15 }]}>
-                        Find Us
-                    </Text>
-                    <View
-                        style={{
-                            paddingHorizontal: 15,
-                            display: "flex",
-                            flexDirection: "row",
-                            gap: 5,
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                        }}
-                    >
-                        <TouchableOpacity
-                            style={{
-                                backgroundColor: Colors.grey,
-                                borderRadius: 10,
-                                padding: 20,
-                                width: "30%",
-                                alignItems: "center",
-                            }}
-                        >
-                            <FontAwesome6
-                                name="instagram"
-                                size={25}
-                                color={Colors.light}
-                            />
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={{
-                                backgroundColor: Colors.grey,
-                                borderRadius: 10,
-                                padding: 20,
-                                width: "30%",
-                                alignItems: "center",
-                            }}
-                        >
-                            <FontAwesome6
-                                name="x-twitter"
-                                size={25}
-                                color={Colors.light}
-                            />
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={{
-                                backgroundColor: Colors.grey,
-                                borderRadius: 10,
-                                padding: 20,
-                                width: "30%",
-                                alignItems: "center",
-                            }}
-                        >
-                            <FontAwesome6
-                                name="facebook"
-                                size={25}
-                                color={Colors.light}
-                            />
+                        <TouchableOpacity style={{ gap: 15 }}>
+                            <Text
+                                style={[
+                                    Theme.BodyText,
+                                    { paddingHorizontal: 15 },
+                                ]}
+                            >
+                                Login with Face ID
+                            </Text>
+                            <Divider />
                         </TouchableOpacity>
                     </View>
-                </View>
-                <View style={{ paddingHorizontal: 15, marginTop: 15 }}>
-                    <Text>Version 0.9.1</Text>
-                </View>
-            </Animated.View>
+                    <View style={{ gap: 15 }}>
+                        <Text style={[Theme.Title, { paddingHorizontal: 15 }]}>
+                            Legal
+                        </Text>
+                        <TouchableOpacity style={{ gap: 15 }}>
+                            <Text
+                                style={[
+                                    Theme.BodyText,
+                                    { paddingHorizontal: 15 },
+                                ]}
+                            >
+                                Terms and Conditions
+                            </Text>
+                            <Divider />
+                        </TouchableOpacity>
+                        <TouchableOpacity style={{ gap: 15 }}>
+                            <Text
+                                style={[
+                                    Theme.BodyText,
+                                    { paddingHorizontal: 15 },
+                                ]}
+                            >
+                                Privacy Policy
+                            </Text>
+                            <Divider />
+                        </TouchableOpacity>
+                    </View>
+                    <View style={{ gap: 15 }}>
+                        <Text style={[Theme.Title, { paddingHorizontal: 15 }]}>
+                            Find Us
+                        </Text>
+                        <View
+                            style={{
+                                paddingHorizontal: 15,
+                                display: "flex",
+                                flexDirection: "row",
+                                gap: 5,
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                            }}
+                        >
+                            <TouchableOpacity
+                                style={{
+                                    backgroundColor: Colors.grey,
+                                    borderRadius: 10,
+                                    padding: 20,
+                                    width: "30%",
+                                    alignItems: "center",
+                                }}
+                            >
+                                <FontAwesome6
+                                    name="instagram"
+                                    size={25}
+                                    color={Colors.light}
+                                />
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={{
+                                    backgroundColor: Colors.grey,
+                                    borderRadius: 10,
+                                    padding: 20,
+                                    width: "30%",
+                                    alignItems: "center",
+                                }}
+                            >
+                                <FontAwesome6
+                                    name="x-twitter"
+                                    size={25}
+                                    color={Colors.light}
+                                />
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={{
+                                    backgroundColor: Colors.grey,
+                                    borderRadius: 10,
+                                    padding: 20,
+                                    width: "30%",
+                                    alignItems: "center",
+                                }}
+                            >
+                                <FontAwesome6
+                                    name="facebook"
+                                    size={25}
+                                    color={Colors.light}
+                                />
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                    <View style={{ paddingHorizontal: 15, marginTop: 15 }}>
+                        <Text>Version 0.9.1</Text>
+                    </View>
+                </Animated.View>
+            </View>
         </View>
     );
 };
