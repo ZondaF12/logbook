@@ -42,7 +42,9 @@ const VehicleDetails = () => {
             .select()
             .eq("id", id);
 
-        return data;
+        if (data) {
+            return data[0];
+        }
     };
 
     const getSelf = async () => {
@@ -96,8 +98,8 @@ const VehicleDetails = () => {
         >
             <ScrollView style={{ paddingBottom: 550 }}>
                 <ImageSwiper
-                    isSwipable={vehicle[0]?.images?.length > 1}
-                    images={vehicle[0]?.images}
+                    isSwipable={vehicle?.images?.length > 1}
+                    images={vehicle?.images}
                     height={deviceHeight * 0.5}
                 />
 
@@ -139,7 +141,7 @@ const VehicleDetails = () => {
                                     },
                                 ]}
                             >
-                                {vehicle[0].model}
+                                {vehicle.model}
                             </Text>
                             <View
                                 style={{
@@ -160,16 +162,18 @@ const VehicleDetails = () => {
                                         },
                                     ]}
                                 >
-                                    {vehicle[0].make}
+                                    {vehicle.make}
                                 </Text>
                             </View>
                         </Animated.View>
-                        <Animated.Text
-                            entering={FadeInRight.springify().delay(200)}
-                            style={[Theme.Title, { color: Colors.dark }]}
-                        >
-                            {vehicle[0].registration}
-                        </Animated.Text>
+                        <View>
+                            <Animated.Text
+                                entering={FadeInRight.springify().delay(200)}
+                                style={[Theme.Title, { color: Colors.dark }]}
+                            >
+                                {vehicle.registration}
+                            </Animated.Text>
+                        </View>
                     </View>
 
                     <Divider />
@@ -268,13 +272,13 @@ const VehicleDetails = () => {
                                     ]}
                                 >
                                     {!isNaN(
-                                        new Date(vehicle[0]?.tax_date).getTime()
+                                        new Date(vehicle?.tax_date).getTime()
                                     )
-                                        ? new Date(vehicle[0].tax_date) >
+                                        ? new Date(vehicle.tax_date) >
                                           new Date()
                                             ? "Taxed"
                                             : "Not Taxed"
-                                        : vehicle[0]?.tax_date}
+                                        : vehicle?.tax_date}
                                 </Text>
                             </TouchableOpacity>
                             <TouchableOpacity
@@ -302,7 +306,7 @@ const VehicleDetails = () => {
                                         { color: Colors.light },
                                     ]}
                                 >
-                                    {new Date(vehicle[0].mot_date) > new Date()
+                                    {new Date(vehicle.mot_date) > new Date()
                                         ? "Valid"
                                         : "Not Valid"}
                                 </Text>
@@ -333,9 +337,9 @@ const VehicleDetails = () => {
                                     ]}
                                 >
                                     {new Date(
-                                        vehicle[0]?.insurance_date
+                                        vehicle?.insurance_date
                                     ).getTime() !== 0
-                                        ? new Date(vehicle[0].insurance_date) >
+                                        ? new Date(vehicle.insurance_date) >
                                           new Date()
                                             ? "Valid"
                                             : "Not Valid"
@@ -368,9 +372,9 @@ const VehicleDetails = () => {
                                     ]}
                                 >
                                     {new Date(
-                                        vehicle[0]?.service_date
+                                        vehicle?.service_date
                                     ).getTime() !== 0
-                                        ? new Date(vehicle[0].service_date) >
+                                        ? new Date(vehicle.service_date) >
                                           new Date()
                                             ? "Due"
                                             : "Not Due"
@@ -384,13 +388,13 @@ const VehicleDetails = () => {
                                 Theme.Container,
                                 {
                                     gap: 15,
-                                    paddingVertical: 15,
+                                    paddingVertical: 20,
                                     borderRadius: 10,
                                 },
                             ]}
                         >
                             <View>
-                                <Text style={[Theme.BigTitle]}>Technical</Text>
+                                <Text style={[Theme.MedTitle]}>Technical</Text>
                             </View>
                             <View style={{ flexDirection: "column", gap: 10 }}>
                                 <View
@@ -422,7 +426,7 @@ const VehicleDetails = () => {
                                     >
                                         <Text style={Theme.Subtitle}>Make</Text>
                                         <Text style={Theme.Caption}>
-                                            {vehicle[0].make}
+                                            {vehicle.make}
                                         </Text>
                                     </View>
                                 </View>
@@ -455,9 +459,67 @@ const VehicleDetails = () => {
                                     >
                                         <Text style={Theme.Subtitle}>Year</Text>
                                         <Text style={Theme.Caption}>
-                                            {vehicle[0].year}
+                                            {vehicle.year}
                                         </Text>
                                     </View>
+                                </View>
+                                <View
+                                    style={{
+                                        marginTop: 20,
+                                        gap: 15,
+                                        display: "flex",
+                                        flexDirection: "row",
+                                        justifyContent: "space-between",
+                                    }}
+                                >
+                                    <TouchableOpacity
+                                        onPress={() => {}}
+                                        style={{
+                                            backgroundColor: Colors.offgrey,
+                                            height: 50,
+                                            borderRadius: 50,
+                                            flex: 1,
+                                            display: "flex",
+                                            justifyContent: "center",
+                                            alignItems: "center",
+                                        }}
+                                    >
+                                        <Text
+                                            style={{
+                                                fontFamily: "font-b",
+                                                fontSize: 16,
+                                                color: Colors.dark,
+                                                textAlign: "center",
+                                                lineHeight: 50,
+                                            }}
+                                        >
+                                            Run Check
+                                        </Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        onPress={() => {}}
+                                        style={{
+                                            backgroundColor: Colors.offgrey,
+                                            height: 50,
+                                            borderRadius: 50,
+                                            flex: 1,
+                                            display: "flex",
+                                            justifyContent: "center",
+                                            alignItems: "center",
+                                        }}
+                                    >
+                                        <Text
+                                            style={{
+                                                fontFamily: "font-b",
+                                                fontSize: 16,
+                                                color: Colors.dark,
+                                                textAlign: "center",
+                                                lineHeight: 50,
+                                            }}
+                                        >
+                                            More Stats
+                                        </Text>
+                                    </TouchableOpacity>
                                 </View>
                             </View>
                         </View>
@@ -467,7 +529,7 @@ const VehicleDetails = () => {
                                 Theme.Container,
                                 {
                                     gap: 15,
-                                    paddingVertical: 15,
+                                    paddingVertical: 20,
                                     borderRadius: 10,
                                 },
                             ]}
@@ -478,24 +540,24 @@ const VehicleDetails = () => {
                                     justifyContent: "space-between",
                                 }}
                             >
-                                <Text style={[Theme.BigTitle]}>
+                                <Text style={[Theme.MedTitle]}>
                                     Description
                                 </Text>
-                                {vehicle[0]?.description && (
+                                {vehicle?.description && (
                                     <TouchableOpacity
                                         onPress={() => {
                                             router.push({
                                                 pathname: `/vehicle-details/set-description/${id}`,
                                                 params: {
                                                     description:
-                                                        vehicle[0]?.description,
+                                                        vehicle?.description,
                                                 },
                                             });
                                         }}
                                     >
                                         <Feather
                                             name="edit-3"
-                                            size={25}
+                                            size={20}
                                             color={Colors.dark}
                                         />
                                     </TouchableOpacity>
@@ -503,9 +565,9 @@ const VehicleDetails = () => {
                             </View>
 
                             <View>
-                                {vehicle[0]?.description ? (
+                                {vehicle?.description ? (
                                     <Text style={Theme.BodyText}>
-                                        {vehicle[0]?.description}
+                                        {vehicle?.description}
                                     </Text>
                                 ) : (
                                     <TouchableOpacity
@@ -546,15 +608,52 @@ const VehicleDetails = () => {
                                 Theme.Container,
                                 {
                                     gap: 15,
-                                    paddingVertical: 15,
+                                    paddingVertical: 20,
                                     borderRadius: 10,
                                 },
                             ]}
                         >
                             <View>
-                                <Text style={[Theme.BigTitle]}>
+                                <Text style={[Theme.MedTitle]}>
                                     History File
                                 </Text>
+                            </View>
+                            <View>
+                                {vehicle?.history ? (
+                                    <Text style={Theme.BodyText}>
+                                        {vehicle?.history}
+                                    </Text>
+                                ) : (
+                                    <TouchableOpacity
+                                        onPress={() => {
+                                            router.push(
+                                                `/vehicle-details/set-description/${id}`
+                                            );
+                                        }}
+                                        style={{
+                                            width: "100%",
+                                            backgroundColor: Colors.secondary,
+                                            height: 50,
+                                            borderRadius: 10,
+                                            marginTop: 15,
+                                            display: "flex",
+                                            justifyContent: "center",
+                                            alignItems: "center",
+                                        }}
+                                    >
+                                        <Text
+                                            style={{
+                                                fontFamily: "font-b",
+                                                fontSize: 16,
+                                                color: Colors.light,
+                                                textAlign: "center",
+                                                lineHeight: 50,
+                                            }}
+                                        >
+                                            Start your car's digital Logbook
+                                        </Text>
+                                    </TouchableOpacity>
+                                )}
                             </View>
                         </View>
                     </Animated.View>

@@ -26,6 +26,11 @@ export const Theme = StyleSheet.create({
         color: Colors.dark,
         fontSize: 32,
     },
+    MedTitle: {
+        fontFamily: "font-b",
+        color: Colors.dark,
+        fontSize: 24,
+    },
     Title: {
         fontFamily: "font-b",
         color: Colors.dark,

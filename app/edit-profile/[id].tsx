@@ -101,7 +101,6 @@ const EditProfile = () => {
                 style={[
                     Theme.Container,
                     {
-                        // justifyContent: "center",
                         gap: 10,
                         backgroundColor: "#FFF",
                         width: dimensions.width,
@@ -169,7 +168,7 @@ const EditProfile = () => {
                 <View style={{ gap: 10, marginTop: 5 }}>
                     <Text style={Theme.Title}>Bio</Text>
                     <Text style={Theme.Caption}>
-                        Tell others a bit about yourself!
+                        Tell us a little bit about your vehicle
                     </Text>
                 </View>
                 <Controller

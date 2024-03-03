@@ -85,10 +85,11 @@ const SetDescription = () => {
                 style={[
                     Theme.Container,
                     {
-                        justifyContent: "center",
                         gap: 10,
                         backgroundColor: "#FFF",
                         width: dimensions.width,
+                        paddingHorizontal: 15,
+                        paddingTop: 30,
                     },
                 ]}
             >
@@ -103,6 +104,12 @@ const SetDescription = () => {
                     <Text style={Theme.BigTitle}>Vehicle Description</Text>
                 </View>
 
+                <View style={{ gap: 10, marginTop: 5 }}>
+                    <Text style={Theme.Title}>Description</Text>
+                    <Text style={Theme.Caption}>
+                        Tell others a bit about yourself!
+                    </Text>
+                </View>
                 <Controller
                     control={control}
                     rules={{

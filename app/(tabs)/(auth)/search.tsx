@@ -6,7 +6,7 @@ import {
     TouchableOpacity,
     Keyboard,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Colors from "@/constants/Colors";
 import { Ionicons } from "@expo/vector-icons";
 import Animated, {
@@ -23,6 +23,8 @@ import { FlashList } from "@shopify/flash-list";
 import { Divider } from "react-native-elements";
 import { useQuery } from "@tanstack/react-query";
 import { Marquee } from "@animatereactnative/marquee";
+import { supabase } from "@/lib/supabase";
+import ProfileSearchResult from "@/components/Search/ProfileSearchResult";
 
 const Search = () => {
     return (
@@ -76,22 +78,33 @@ const SearchComponent = () => {
     const router = useRouter();
     const { session } = useAuth();
 
-    // const { data, isLoading, isError, error, refetch } = useQuery(
-    //     searchQuery.searchControllerSearch(query)
-    // );
+    const fetchUsers = async () => {
+        const { data, error } = await supabase
+            .from("users")
+            .select()
+            .textSearch("username", `${query.toLowerCase()}:*`);
 
-    // // Combine profiles and places into a single array
-    // const combinedData = [...(data?.profiles ?? []), ...(data?.places ?? [])];
+        if (data) {
+            return data;
+        } else {
+            return [];
+        }
+    };
 
-    // const handleGoToProfile = (userId: string) => {
-    //     if (session) {
-    //         session.profile.id === userId
-    //             ? router.push("/(tabs)/(auth)/my-profile")
-    //             : router.push(`/profile/${userId}`);
-    //     } else {
-    //         router.push(`/profile/${userId}`);
-    //     }
-    // };
+    const { data, isLoading, isError, error, refetch } = useQuery({
+        queryKey: ["search_for_users"],
+        queryFn: fetchUsers,
+    });
+
+    useEffect(() => {
+        refetch();
+    }, [query]);
+
+    const handleGoToProfile = (userId: string) => {
+        session?.user.id === userId
+            ? router.push("/(tabs)/(auth)/my-profile")
+            : router.push(`/profile/${userId}`);
+    };
 
     return (
         <View style={[Theme.Container, { backgroundColor: "#FFF" }]}>
@@ -190,12 +203,23 @@ const SearchComponent = () => {
             <FlashList
                 keyboardShouldPersistTaps="handled"
                 estimatedItemSize={25}
-                // data={combinedData}
+                data={data}
                 ItemSeparatorComponent={() => <Divider />}
                 onScroll={Keyboard.dismiss}
-                renderItem={({ item }) => {
-                    return <View></View>;
-                }}
+                renderItem={({ item }: any) => (
+                    <TouchableOpacity
+                        onPress={() => handleGoToProfile(item.user_id)}
+                    >
+                        <ProfileSearchResult
+                            profile={{
+                                id: item.id,
+                                name: item.name,
+                                username: item.username,
+                                avatar: item.avatar,
+                            }}
+                        />
+                    </TouchableOpacity>
+                )}
             />
         </View>
     );
