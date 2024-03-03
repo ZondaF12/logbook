@@ -66,7 +66,7 @@ const Login = () => {
                             },
                         ]}
                     >
-                        logbook
+                        Logbook
                     </Text>
 
                     <AppleAuthentication.AppleAuthenticationButton
