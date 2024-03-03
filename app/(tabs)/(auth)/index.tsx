@@ -19,7 +19,9 @@ import { FlashList } from "@shopify/flash-list";
 import MyVehicle from "@/components/Garage/MyVehicle";
 
 const index = () => {
-    const [findHeight, setFindHeight] = useState<number | undefined>(undefined);
+    const [fleetHeight, setFleetHeight] = useState<number | undefined>(
+        undefined
+    );
 
     const { session } = useAuth();
 
@@ -64,21 +66,21 @@ const index = () => {
                     exiting={FadeOutLeft}
                     style={Theme.Logo}
                 >
-                    garage
+                    my fleet
                 </Animated.Text>
             </View>
 
             <View
                 style={Theme.Container}
                 onLayout={(e) => {
-                    if (findHeight) {
-                        e.nativeEvent.layout.height < findHeight &&
-                            setFindHeight(e.nativeEvent.layout.height / 2.5);
+                    if (fleetHeight) {
+                        e.nativeEvent.layout.height < fleetHeight &&
+                            setFleetHeight(e.nativeEvent.layout.height / 2.5);
                     } else {
                         LayoutAnimation.configureNext(
                             LayoutAnimation.Presets.easeInEaseOut
                         );
-                        setFindHeight(e.nativeEvent.layout.height / 2.5);
+                        setFleetHeight(e.nativeEvent.layout.height / 2.5);
                     }
                 }}
             >
@@ -127,7 +129,7 @@ const index = () => {
                             renderItem={({ item }) => (
                                 <MyVehicle
                                     vehicle={item}
-                                    vehicleHeight={findHeight! - 40}
+                                    vehicleHeight={fleetHeight! - 40}
                                 />
                             )}
                         />

@@ -18,11 +18,9 @@ import {
     Feather,
     FontAwesome,
     FontAwesome5,
-    Ionicons,
     MaterialCommunityIcons,
-    Octicons,
 } from "@expo/vector-icons";
-import { Divider } from "react-native-elements";
+import { Divider, Image } from "react-native-elements";
 import MotSvgComponent from "@/assets/svg/MotSvg";
 import TaxSvgComponent from "@/assets/svg/TaxSvg";
 import Animated, {
@@ -53,7 +51,9 @@ const VehicleDetails = () => {
             .select()
             .eq("user_id", session?.user?.id);
 
-        return data;
+        if (data) {
+            return data[0];
+        }
     };
 
     const {
@@ -70,13 +70,13 @@ const VehicleDetails = () => {
     });
 
     const handleGoToProfile = () => {
-        // if (session) {
-        //     session.profile.id === find?.user.id
-        //         ? router.replace("/(tabs)/(auth)/my-profile")
-        //         : router.replace(`/profile/${find?.user.id}`);
-        // } else {
-        //     router.replace(`/profile/${find?.user.id}`);
-        // }
+        if (session?.user.id === user.user_id) {
+            router.navigate("/(tabs)/(auth)/my-profile");
+        } else {
+            router.replace({
+                pathname: `/profile/${user.user_id}`,
+            });
+        }
     };
 
     const handleAction = async (action: any) => {};
@@ -195,17 +195,31 @@ const VehicleDetails = () => {
                                             alignItems: "center",
                                         }}
                                     >
-                                        <View
-                                            style={{
-                                                width: 35,
-                                                height: 35,
-                                                borderRadius: 99,
-                                                backgroundColor: Colors.light,
-                                            }}
-                                        />
+                                        {user?.avatar ? (
+                                            <Image
+                                                source={{
+                                                    uri: user.avatar,
+                                                }}
+                                                style={{
+                                                    width: 35,
+                                                    height: 35,
+                                                    borderRadius: 99,
+                                                }}
+                                            />
+                                        ) : (
+                                            <View
+                                                style={{
+                                                    width: 35,
+                                                    height: 35,
+                                                    borderRadius: 99,
+                                                    backgroundColor:
+                                                        Colors.light,
+                                                }}
+                                            />
+                                        )}
 
                                         <Text style={[Theme.Caption]}>
-                                            Owned by {`@${user[0]?.username}`}
+                                            Owned by {`@${user?.username}`}
                                         </Text>
                                     </TouchableOpacity>
                                 )}

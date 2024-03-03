@@ -25,6 +25,7 @@ import * as ImagePicker from "expo-image-picker";
 import { StatusBar } from "expo-status-bar";
 import { supabase } from "@/lib/supabase";
 import { formatUserJoinedDate } from "@/utils/formatUserJoinedDate";
+import { decode } from "base64-arraybuffer";
 
 const imgDir = FileSystem.documentDirectory + "images/";
 
@@ -83,19 +84,28 @@ const MyProfile = () => {
     }
 
     const uploadImage = async (uri: string) => {
-        // const res = await FileSystem.uploadAsync(
-        //     process.env.EXPO_PUBLIC_API_URL + "/upload",
-        //     uri,
-        //     {
-        //         httpMethod: "POST",
-        //         uploadType: FileSystem.FileSystemUploadType.MULTIPART,
-        //         fieldName: "files",
-        //         headers: {
-        //             Authorization: `Bearer ${session?.accessToken}`,
-        //         },
-        //     }
-        // );
-        // return res.body;
+        const base64 = await FileSystem.readAsStringAsync(uri, {
+            encoding: "base64",
+        });
+        const filePath = `${session?.user?.id}/${new Date().getTime()}.jpeg`;
+
+        try {
+            const { data, error } = await supabase.storage
+                .from("profile")
+                .upload(filePath, decode(base64), {
+                    contentType: "image/jpeg",
+                });
+
+            if (data) {
+                const { data: url, error } = await supabase.storage
+                    .from("profile")
+                    .createSignedUrl(filePath, 600000000000);
+
+                return url?.signedUrl;
+            }
+        } catch (error) {
+            console.warn(error);
+        }
     };
 
     const saveImage = async (uri: string, orientation: number) => {
@@ -154,9 +164,7 @@ const MyProfile = () => {
             const image_urls: string[] = [];
 
             for (const item of uploadedImages) {
-                const json_array: string[] = JSON.parse(item!);
-                const image_url: string = json_array[0];
-                image_urls.push(image_url);
+                image_urls.push(item!);
             }
 
             const updatedImages = savedImages.map((savedImage, index) => ({
@@ -164,14 +172,10 @@ const MyProfile = () => {
                 serverImage: image_urls[index],
             }));
 
-            // await usersApi.usersControllerUpdateUserAvatar({
-            //     headers: {
-            //         Authorization: `Bearer ${session?.accessToken}`,
-            //     },
-            //     data: {
-            //         avatar: updatedImages[0].serverImage,
-            //     },
-            // });
+            await supabase
+                .from("users")
+                .update({ avatar: image_urls[0] })
+                .eq("id", profile.id);
 
             setImages((prevImages) => [
                 ...prevImages.filter((image) => image.serverImage != null),
@@ -296,15 +300,14 @@ const MyProfile = () => {
                                     )}
                                 </>
                             ) : (
-                                <View></View>
-                                // <Image
-                                //     source={{ uri: session?.profile?.avatar }}
-                                //     style={{
-                                //         width: 70,
-                                //         height: 70,
-                                //         borderRadius: 99,
-                                //     }}
-                                // />
+                                <Image
+                                    source={{ uri: profile?.avatar }}
+                                    style={{
+                                        width: 70,
+                                        height: 70,
+                                        borderRadius: 99,
+                                    }}
+                                />
                             )}
                         </TouchableOpacity>
 
@@ -330,7 +333,6 @@ const MyProfile = () => {
                                     ]}
                                 >
                                     4 Vehicles
-                                    {/* Fleet Member Since {profile.created_at} */}
                                 </Text>
                                 <Text
                                     style={[
@@ -420,6 +422,7 @@ const MyProfile = () => {
                     flex: 1,
                     paddingVertical: 15,
                     gap: 15,
+                    marginTop: 15,
                 }}
             >
                 <View style={{ gap: 15 }}>
