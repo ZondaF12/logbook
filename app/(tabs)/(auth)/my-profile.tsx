@@ -251,8 +251,7 @@ const MyProfile = () => {
                                 height: 70,
                                 borderColor: Colors.grey,
                                 borderRadius: 99,
-                                borderWidth: 1,
-                                // borderWidth: session?.profile?.avatar ? 0 : 1,
+                                borderWidth: profile?.avatar ? 0 : 1,
                             }}
                         >
                             <MaterialCommunityIcons
