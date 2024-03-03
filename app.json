@@ -1,7 +1,7 @@
 {
     "expo": {
-        "name": "Pocket Garage",
-        "slug": "pocket-garage",
+        "name": "Logbook",
+        "slug": "logbook",
         "version": "1.0.0",
         "orientation": "portrait",
         "icon": "./assets/images/icon.png",
@@ -16,7 +16,7 @@
         "ios": {
             "supportsTablet": false,
             "usesAppleSignIn": true,
-            "bundleIdentifier": "com.ruaridhbell.pocketgarage"
+            "bundleIdentifier": "com.ruaridhbell.logbook"
         },
         "android": {
             "adaptiveIcon": {
@@ -38,7 +38,7 @@
                 "origin": false
             },
             "eas": {
-                "projectId": "1f7cefd3-c52f-46c6-a539-81f0dca96004"
+                "projectId": "4fa80552-6960-42f9-92ad-55df056f4b40"
             }
         }
     }

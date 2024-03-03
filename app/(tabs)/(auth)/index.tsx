@@ -66,7 +66,7 @@ const index = () => {
                     exiting={FadeOutLeft}
                     style={Theme.Logo}
                 >
-                    my fleet
+                    my garage
                 </Animated.Text>
             </View>
 

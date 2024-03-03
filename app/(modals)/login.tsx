@@ -66,7 +66,7 @@ const Login = () => {
                             },
                         ]}
                     >
-                        fleet
+                        logbook
                     </Text>
 
                     <AppleAuthentication.AppleAuthenticationButton
