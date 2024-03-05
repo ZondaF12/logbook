@@ -626,8 +626,8 @@ const VehicleDetails = () => {
                                 ) : (
                                     <TouchableOpacity
                                         onPress={() => {
-                                            router.push(
-                                                `/vehicle-details/set-description/${id}`
+                                            router.replace(
+                                                `/new-logbook/${id}`
                                             );
                                         }}
                                         style={{

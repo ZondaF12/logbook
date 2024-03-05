@@ -141,6 +141,19 @@ function RootLayoutNav() {
                 name="profile/[id]"
                 options={{ headerShown: false }}
             />
+            <Stack.Screen
+                name="new-logbook/[id]"
+                options={{
+                    headerShown: false,
+                }}
+            />
+            <Stack.Screen
+                name="new-logbook/add/[id]"
+                options={{
+                    headerShown: false,
+                    animation: "slide_from_right",
+                }}
+            />
         </Stack>
     );
 }

@@ -195,8 +195,6 @@ const NewVehicle = () => {
     const dimensions = useWindowDimensions();
 
     const onSubmit: SubmitHandler<any> = async (values) => {
-        console.log(values.images[0]);
-
         const newVehicle = {
             registration: id,
             model: values.model,
