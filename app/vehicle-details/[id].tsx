@@ -5,7 +5,7 @@ import {
     ScrollView,
     TouchableOpacity,
 } from "react-native";
-import React from "react";
+import React, { useEffect } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useAuth } from "@/providers/AuthProvider";
 import { useQuery } from "@tanstack/react-query";
@@ -15,7 +15,6 @@ import { supabase } from "@/lib/supabase";
 import { Theme } from "@/constants/Styles";
 import Colors from "@/constants/Colors";
 import {
-    AntDesign,
     Entypo,
     Feather,
     FontAwesome,
@@ -35,7 +34,10 @@ import { FlashList } from "@shopify/flash-list";
 import { LogbookTypes } from "../new-logbook/[id]";
 
 const VehicleDetails = () => {
-    const { id } = useLocalSearchParams<{ id: string; data: string }>();
+    const { id, user_id } = useLocalSearchParams<{
+        id: string;
+        user_id: string;
+    }>();
     const router = useRouter();
     const { session } = useAuth();
 
@@ -52,11 +54,11 @@ const VehicleDetails = () => {
         }
     };
 
-    const getSelf = async () => {
+    const getVehicleOwner = async () => {
         const { data, error } = await supabase
             .from("users")
             .select()
-            .eq("user_id", session?.user?.id);
+            .eq("user_id", user_id);
 
         if (data) {
             return data[0];
@@ -64,16 +66,18 @@ const VehicleDetails = () => {
     };
 
     const getVehicleLogs = async () => {
-        const { data, error } = await supabase
-            .from("vehicle_logs")
-            .select()
-            .eq("vehicle_id", id);
+        if (session?.user?.id === user_id) {
+            const { data, error } = await supabase
+                .from("vehicle_logs")
+                .select()
+                .eq("vehicle_id", id);
 
-        console.log(data);
-
-        if (data) {
-            return data;
+            if (data) {
+                return data;
+            }
         }
+
+        return [];
     };
 
     const {
@@ -84,12 +88,20 @@ const VehicleDetails = () => {
         refetch,
     } = useQuery({ queryKey: ["vehicle"], queryFn: getVehicle });
 
-    const { data: user } = useQuery({
-        queryKey: ["user"],
-        queryFn: getSelf,
+    const {
+        data: user,
+        refetch: refetchOwner,
+        isLoading: isLoadingOwner,
+    } = useQuery({
+        queryKey: ["vehicle_owner"],
+        queryFn: getVehicleOwner,
     });
 
-    const { data: logs } = useQuery({
+    const {
+        data: logs,
+        refetch: refetchLogs,
+        isLoading: isLoadingLogs,
+    } = useQuery({
         queryKey: ["vehicle_logs"],
         queryFn: getVehicleLogs,
     });
@@ -106,7 +118,9 @@ const VehicleDetails = () => {
 
     const handleAction = async (action: any) => {};
 
-    if (vehicle?.length === 0 || !vehicle || !user) {
+    console.log(logs);
+
+    if (vehicle?.length === 0 || !vehicle || !user || !logs) {
         return <Loader />;
     }
 
@@ -120,24 +134,36 @@ const VehicleDetails = () => {
             }}
         >
             <ScrollView style={{ paddingBottom: 550 }}>
-                <TouchableOpacity
-                    style={{
-                        position: "absolute",
-                        zIndex: 50,
-                        top: 10,
-                        right: 10,
-                        backgroundColor: Colors.light,
-                        padding: 8,
-                        borderRadius: 99,
-                        opacity: 0.7,
-                    }}
-                >
-                    <Ionicons
-                        name="settings-sharp"
-                        size={28}
-                        color={Colors.dark}
-                    />
-                </TouchableOpacity>
+                {user_id === session?.user?.id && (
+                    <Animated.View
+                        entering={FadeInRight.springify().delay(500)}
+                        style={{
+                            position: "absolute",
+                            zIndex: 50,
+                            top: 10,
+                            right: 10,
+                        }}
+                    >
+                        <TouchableOpacity
+                            style={{
+                                backgroundColor: Colors.light,
+                                padding: 8,
+                                borderRadius: 99,
+                                opacity: 0.7,
+                            }}
+                            onPress={() =>
+                                router.push(`/vehicle-details/settings/${id}`)
+                            }
+                        >
+                            <Ionicons
+                                name="settings-sharp"
+                                size={28}
+                                color={Colors.dark}
+                            />
+                        </TouchableOpacity>
+                    </Animated.View>
+                )}
+
                 <ImageSwiper
                     isSwipable={vehicle?.images?.length > 1}
                     images={vehicle?.images}
@@ -584,25 +610,26 @@ const VehicleDetails = () => {
                                 <Text style={[Theme.MedTitle]}>
                                     Description
                                 </Text>
-                                {vehicle?.description && (
-                                    <TouchableOpacity
-                                        onPress={() => {
-                                            router.push({
-                                                pathname: `/vehicle-details/set-description/${id}`,
-                                                params: {
-                                                    description:
-                                                        vehicle?.description,
-                                                },
-                                            });
-                                        }}
-                                    >
-                                        <Feather
-                                            name="edit-3"
-                                            size={20}
-                                            color={Colors.dark}
-                                        />
-                                    </TouchableOpacity>
-                                )}
+                                {vehicle?.description &&
+                                    user_id === session?.user?.id && (
+                                        <TouchableOpacity
+                                            onPress={() => {
+                                                router.push({
+                                                    pathname: `/vehicle-details/set-description/${id}`,
+                                                    params: {
+                                                        description:
+                                                            vehicle?.description,
+                                                    },
+                                                });
+                                            }}
+                                        >
+                                            <Feather
+                                                name="edit-3"
+                                                size={20}
+                                                color={Colors.dark}
+                                            />
+                                        </TouchableOpacity>
+                                    )}
                             </View>
 
                             <View>
@@ -610,7 +637,7 @@ const VehicleDetails = () => {
                                     <Text style={Theme.BodyText}>
                                         {vehicle?.description}
                                     </Text>
-                                ) : (
+                                ) : user_id === session?.user?.id ? (
                                     <TouchableOpacity
                                         onPress={() => {
                                             router.push(
@@ -640,266 +667,285 @@ const VehicleDetails = () => {
                                             Add Vehicle Description
                                         </Text>
                                     </TouchableOpacity>
+                                ) : (
+                                    <Text style={Theme.BodyText}>
+                                        No description set
+                                    </Text>
                                 )}
                             </View>
                         </View>
 
-                        <View
-                            style={[
-                                Theme.Container,
-                                {
-                                    gap: 15,
-                                    paddingVertical: 20,
-                                    borderRadius: 10,
-                                },
-                            ]}
-                        >
+                        {user_id === session?.user?.id && (
                             <View
-                                style={{
-                                    flexDirection: "row",
-                                    justifyContent: "space-between",
-                                }}
+                                style={[
+                                    Theme.Container,
+                                    {
+                                        gap: 15,
+                                        paddingVertical: 20,
+                                        borderRadius: 10,
+                                    },
+                                ]}
                             >
-                                <Text style={[Theme.MedTitle]}>Logbook</Text>
-                                {logs && logs.length > 0 && (
-                                    <TouchableOpacity
-                                        onPress={() => {
-                                            router.replace(
-                                                `/new-logbook/${id}`
-                                            );
-                                        }}
-                                    >
-                                        <Feather
-                                            name="plus"
-                                            size={20}
-                                            color={Colors.dark}
-                                        />
-                                    </TouchableOpacity>
-                                )}
-                            </View>
-                            <View>
-                                {logs && logs.length > 0 ? (
-                                    <>
-                                        <FlashList
-                                            decelerationRate={"fast"}
-                                            viewabilityConfig={{
-                                                itemVisiblePercentThreshold: 80,
+                                <View
+                                    style={{
+                                        flexDirection: "row",
+                                        justifyContent: "space-between",
+                                    }}
+                                >
+                                    <Text style={[Theme.MedTitle]}>
+                                        Logbook
+                                    </Text>
+                                    {logs && logs.length > 0 && (
+                                        <TouchableOpacity
+                                            onPress={() => {
+                                                router.replace(
+                                                    `/new-logbook/${id}`
+                                                );
                                             }}
-                                            onRefresh={() => refetch()}
-                                            refreshing={isLoading}
-                                            data={logs}
-                                            keyExtractor={(item) =>
-                                                item.id.toString()
-                                            }
-                                            estimatedItemSize={72}
-                                            showsVerticalScrollIndicator={false}
-                                            renderItem={({ item }) => (
-                                                <TouchableOpacity
-                                                    style={{
-                                                        flexDirection: "row",
-                                                        alignItems: "center",
-                                                        justifyContent:
-                                                            "space-between",
-                                                        paddingVertical: 8,
-                                                    }}
-                                                    onPress={() =>
-                                                        router.push(
-                                                            `/logbooks/item/${item.id}`
-                                                        )
-                                                    }
-                                                >
-                                                    <View
+                                        >
+                                            <Feather
+                                                name="plus"
+                                                size={20}
+                                                color={Colors.dark}
+                                            />
+                                        </TouchableOpacity>
+                                    )}
+                                </View>
+                                <View>
+                                    {logs && logs.length > 0 ? (
+                                        <>
+                                            <FlashList
+                                                decelerationRate={"fast"}
+                                                viewabilityConfig={{
+                                                    itemVisiblePercentThreshold: 80,
+                                                }}
+                                                onRefresh={() => refetch()}
+                                                refreshing={isLoading}
+                                                data={logs}
+                                                keyExtractor={(item) =>
+                                                    item.id.toString()
+                                                }
+                                                estimatedItemSize={72}
+                                                showsVerticalScrollIndicator={
+                                                    false
+                                                }
+                                                renderItem={({ item }) => (
+                                                    <TouchableOpacity
                                                         style={{
                                                             flexDirection:
                                                                 "row",
                                                             alignItems:
                                                                 "center",
-                                                            gap: 10,
-                                                            width: "70%",
+                                                            justifyContent:
+                                                                "space-between",
+                                                            paddingVertical: 8,
                                                         }}
+                                                        onPress={() =>
+                                                            router.push(
+                                                                `/logbooks/item/${item.id}`
+                                                            )
+                                                        }
                                                     >
                                                         <View
                                                             style={{
-                                                                padding: 10,
-                                                                borderRadius: 99,
-                                                                backgroundColor:
-                                                                    Colors.offgrey,
-                                                            }}
-                                                        >
-                                                            {
-                                                                LogbookTypes[
-                                                                    item.category -
-                                                                        1
-                                                                ].icon
-                                                            }
-                                                        </View>
-                                                        <View
-                                                            style={{
                                                                 flexDirection:
-                                                                    "column",
-                                                                gap: 5,
+                                                                    "row",
+                                                                alignItems:
+                                                                    "center",
+                                                                gap: 10,
+                                                                width: "70%",
                                                             }}
                                                         >
-                                                            <Text
-                                                                style={[
-                                                                    Theme.Title,
-                                                                ]}
-                                                                numberOfLines={
-                                                                    1
-                                                                }
+                                                            <View
+                                                                style={{
+                                                                    padding: 10,
+                                                                    borderRadius: 99,
+                                                                    backgroundColor:
+                                                                        Colors.offgrey,
+                                                                }}
                                                             >
-                                                                {item.title}
-                                                            </Text>
-                                                            <Text
-                                                                style={
-                                                                    Theme.ReviewText
+                                                                {
+                                                                    LogbookTypes[
+                                                                        item.category -
+                                                                            1
+                                                                    ].icon
                                                                 }
+                                                            </View>
+                                                            <View
+                                                                style={{
+                                                                    flexDirection:
+                                                                        "column",
+                                                                    gap: 5,
+                                                                }}
                                                             >
-                                                                {new Date(
-                                                                    item.date
-                                                                ).toDateString()}
-                                                            </Text>
+                                                                <Text
+                                                                    style={[
+                                                                        Theme.Title,
+                                                                    ]}
+                                                                    numberOfLines={
+                                                                        1
+                                                                    }
+                                                                >
+                                                                    {item.title}
+                                                                </Text>
+                                                                <Text
+                                                                    style={
+                                                                        Theme.ReviewText
+                                                                    }
+                                                                >
+                                                                    {new Date(
+                                                                        item.date
+                                                                    ).toDateString()}
+                                                                </Text>
+                                                            </View>
                                                         </View>
-                                                    </View>
-                                                    <View>
-                                                        <Entypo
-                                                            name="chevron-right"
-                                                            size={20}
-                                                            color={Colors.dark}
-                                                        />
-                                                    </View>
-                                                </TouchableOpacity>
-                                            )}
-                                        />
-                                        <View
-                                            style={{
-                                                marginTop: 20,
-                                                gap: 15,
-                                                display: "flex",
-                                                flexDirection: "row",
-                                                justifyContent: "space-between",
-                                            }}
-                                        >
-                                            <TouchableOpacity
-                                                onPress={() => {}}
+                                                        <View>
+                                                            <Entypo
+                                                                name="chevron-right"
+                                                                size={20}
+                                                                color={
+                                                                    Colors.dark
+                                                                }
+                                                            />
+                                                        </View>
+                                                    </TouchableOpacity>
+                                                )}
+                                            />
+                                            <View
                                                 style={{
-                                                    backgroundColor:
-                                                        Colors.offgrey,
-                                                    height: 50,
-                                                    borderRadius: 50,
-                                                    flex: 1,
+                                                    marginTop: 20,
+                                                    gap: 15,
                                                     display: "flex",
-                                                    justifyContent: "center",
-                                                    alignItems: "center",
+                                                    flexDirection: "row",
+                                                    justifyContent:
+                                                        "space-between",
                                                 }}
                                             >
-                                                <Text
+                                                <TouchableOpacity
+                                                    onPress={() => {}}
                                                     style={{
-                                                        fontFamily: "font-b",
-                                                        fontSize: 16,
-                                                        color: Colors.dark,
-                                                        textAlign: "center",
-                                                        lineHeight: 50,
+                                                        backgroundColor:
+                                                            Colors.offgrey,
+                                                        height: 50,
+                                                        borderRadius: 50,
+                                                        flex: 1,
+                                                        display: "flex",
+                                                        justifyContent:
+                                                            "center",
+                                                        alignItems: "center",
                                                     }}
                                                 >
-                                                    View All
-                                                </Text>
-                                            </TouchableOpacity>
-                                        </View>
-                                    </>
-                                ) : (
-                                    <TouchableOpacity
-                                        onPress={() => {
-                                            router.replace(
-                                                `/new-logbook/${id}`
-                                            );
-                                        }}
-                                        style={{
-                                            width: "100%",
-                                            backgroundColor: Colors.secondary,
-                                            height: 50,
-                                            borderRadius: 10,
-                                            marginTop: 15,
-                                            display: "flex",
-                                            justifyContent: "center",
-                                            alignItems: "center",
-                                        }}
-                                    >
-                                        <Text
+                                                    <Text
+                                                        style={{
+                                                            fontFamily:
+                                                                "font-b",
+                                                            fontSize: 16,
+                                                            color: Colors.dark,
+                                                            textAlign: "center",
+                                                            lineHeight: 50,
+                                                        }}
+                                                    >
+                                                        View All
+                                                    </Text>
+                                                </TouchableOpacity>
+                                            </View>
+                                        </>
+                                    ) : (
+                                        <TouchableOpacity
+                                            onPress={() => {
+                                                router.replace(
+                                                    `/new-logbook/${id}`
+                                                );
+                                            }}
                                             style={{
-                                                fontFamily: "font-b",
-                                                fontSize: 16,
-                                                color: Colors.light,
-                                                textAlign: "center",
-                                                lineHeight: 50,
+                                                width: "100%",
+                                                backgroundColor:
+                                                    Colors.secondary,
+                                                height: 50,
+                                                borderRadius: 10,
+                                                marginTop: 15,
+                                                display: "flex",
+                                                justifyContent: "center",
+                                                alignItems: "center",
                                             }}
                                         >
-                                            Start your car's digital Logbook
-                                        </Text>
-                                    </TouchableOpacity>
-                                )}
+                                            <Text
+                                                style={{
+                                                    fontFamily: "font-b",
+                                                    fontSize: 16,
+                                                    color: Colors.light,
+                                                    textAlign: "center",
+                                                    lineHeight: 50,
+                                                }}
+                                            >
+                                                Start your car's digital Logbook
+                                            </Text>
+                                        </TouchableOpacity>
+                                    )}
+                                </View>
                             </View>
-                        </View>
+                        )}
                     </Animated.View>
-
-                    <View
-                        style={{
-                            marginTop: 20,
-                            gap: 15,
-                            display: "flex",
-                            flexDirection: "row",
-                            justifyContent: "space-between",
-                        }}
-                    >
-                        <TouchableOpacity
-                            onPress={() => {}}
+                    {user_id === session?.user?.id && (
+                        <View
                             style={{
-                                backgroundColor: Colors.secondary,
-                                height: 50,
-                                borderRadius: 10,
-                                flex: 1,
+                                marginTop: 20,
+                                gap: 15,
                                 display: "flex",
-                                justifyContent: "center",
-                                alignItems: "center",
+                                flexDirection: "row",
+                                justifyContent: "space-between",
                             }}
                         >
-                            <Text
+                            <TouchableOpacity
+                                onPress={() => {}}
                                 style={{
-                                    fontFamily: "font-b",
-                                    fontSize: 16,
-                                    color: Colors.light,
-                                    textAlign: "center",
-                                    lineHeight: 50,
+                                    backgroundColor: Colors.secondary,
+                                    height: 50,
+                                    borderRadius: 10,
+                                    flex: 1,
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    alignItems: "center",
                                 }}
                             >
-                                Car Handover
-                            </Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            onPress={() => {}}
-                            style={{
-                                backgroundColor: Colors.secondary,
-                                height: 50,
-                                borderRadius: 10,
-                                flex: 1,
-                                display: "flex",
-                                justifyContent: "center",
-                                alignItems: "center",
-                            }}
-                        >
-                            <Text
+                                <Text
+                                    style={{
+                                        fontFamily: "font-b",
+                                        fontSize: 16,
+                                        color: Colors.light,
+                                        textAlign: "center",
+                                        lineHeight: 50,
+                                    }}
+                                >
+                                    Car Handover
+                                </Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => {}}
                                 style={{
-                                    fontFamily: "font-b",
-                                    fontSize: 16,
-                                    color: Colors.light,
-                                    textAlign: "center",
-                                    lineHeight: 50,
+                                    backgroundColor: Colors.secondary,
+                                    height: 50,
+                                    borderRadius: 10,
+                                    flex: 1,
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    alignItems: "center",
                                 }}
                             >
-                                Delete Vehicle
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
+                                <Text
+                                    style={{
+                                        fontFamily: "font-b",
+                                        fontSize: 16,
+                                        color: Colors.light,
+                                        textAlign: "center",
+                                        lineHeight: 50,
+                                    }}
+                                >
+                                    Delete Vehicle
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
                 </View>
             </ScrollView>
         </ScrollView>

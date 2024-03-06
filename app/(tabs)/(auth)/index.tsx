@@ -5,7 +5,7 @@ import {
     TouchableOpacity,
     LayoutAnimation,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Animated, { FadeInLeft, FadeOutLeft } from "react-native-reanimated";
 import { Theme } from "@/constants/Styles";
 import Colors from "@/constants/Colors";

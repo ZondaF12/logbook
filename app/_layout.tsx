@@ -134,6 +134,10 @@ function RootLayoutNav() {
                 options={{ headerShown: false, presentation: "modal" }}
             />
             <Stack.Screen
+                name="vehicle-details/settings/[id]"
+                options={{ headerShown: false, presentation: "modal" }}
+            />
+            <Stack.Screen
                 name="edit-profile/[id]"
                 options={{ headerShown: false, presentation: "modal" }}
             />
