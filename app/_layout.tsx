@@ -154,6 +154,14 @@ function RootLayoutNav() {
                     animation: "slide_from_right",
                 }}
             />
+            <Stack.Screen
+                name="logbooks/[id]"
+                options={{ headerShown: false }}
+            />
+            <Stack.Screen
+                name="logbooks/item/[id]"
+                options={{ headerShown: false, presentation: "modal" }}
+            />
         </Stack>
     );
 }

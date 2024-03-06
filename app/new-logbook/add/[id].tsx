@@ -70,7 +70,7 @@ const AddLogbook = () => {
         });
         const filePath = `${
             session?.user?.id
-        }/${id}/${new Date().getTime()}.jpeg`;
+        }/${id}/images/${new Date().getTime()}.jpeg`;
 
         try {
             const { data, error } = await supabase.storage
@@ -574,6 +574,7 @@ const AddLogbook = () => {
                                         onChange(text);
                                     }}
                                     value={value}
+                                    placeholderTextColor={Colors.grey}
                                 />
                             )}
                             name="title"
@@ -620,6 +621,7 @@ const AddLogbook = () => {
                                         clearErrors("date");
                                     }}
                                     value={value}
+                                    placeholderTextColor={Colors.grey}
                                 />
                             )}
                             name="date"
@@ -668,6 +670,7 @@ const AddLogbook = () => {
                                         clearErrors("description");
                                     }}
                                     value={value}
+                                    placeholderTextColor={Colors.grey}
                                 />
                             )}
                             name="description"
@@ -710,6 +713,7 @@ const AddLogbook = () => {
                                         clearErrors("notes");
                                     }}
                                     value={value}
+                                    placeholderTextColor={Colors.grey}
                                 />
                             )}
                             name="notes"
@@ -744,6 +748,7 @@ const AddLogbook = () => {
                                         onChange(text);
                                     }}
                                     value={value}
+                                    placeholderTextColor={Colors.grey}
                                 />
                             )}
                             name="cost"
@@ -812,7 +817,7 @@ const AddLogbook = () => {
                                                             Colors.light,
                                                     }}
                                                 >
-                                                    <Text>
+                                                    <Text style={Theme.Caption}>
                                                         {file.localFile.name}
                                                     </Text>
                                                 </View>

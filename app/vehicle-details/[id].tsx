@@ -15,9 +15,12 @@ import { supabase } from "@/lib/supabase";
 import { Theme } from "@/constants/Styles";
 import Colors from "@/constants/Colors";
 import {
+    AntDesign,
+    Entypo,
     Feather,
     FontAwesome,
     FontAwesome5,
+    Ionicons,
     MaterialCommunityIcons,
 } from "@expo/vector-icons";
 import { Divider, Image } from "react-native-elements";
@@ -28,6 +31,8 @@ import Animated, {
     FadeInRight,
     FadeInUp,
 } from "react-native-reanimated";
+import { FlashList } from "@shopify/flash-list";
+import { LogbookTypes } from "../new-logbook/[id]";
 
 const VehicleDetails = () => {
     const { id } = useLocalSearchParams<{ id: string; data: string }>();
@@ -58,6 +63,19 @@ const VehicleDetails = () => {
         }
     };
 
+    const getVehicleLogs = async () => {
+        const { data, error } = await supabase
+            .from("vehicle_logs")
+            .select()
+            .eq("vehicle_id", id);
+
+        console.log(data);
+
+        if (data) {
+            return data;
+        }
+    };
+
     const {
         data: vehicle,
         isLoading,
@@ -69,6 +87,11 @@ const VehicleDetails = () => {
     const { data: user } = useQuery({
         queryKey: ["user"],
         queryFn: getSelf,
+    });
+
+    const { data: logs } = useQuery({
+        queryKey: ["vehicle_logs"],
+        queryFn: getVehicleLogs,
     });
 
     const handleGoToProfile = () => {
@@ -97,6 +120,24 @@ const VehicleDetails = () => {
             }}
         >
             <ScrollView style={{ paddingBottom: 550 }}>
+                <TouchableOpacity
+                    style={{
+                        position: "absolute",
+                        zIndex: 50,
+                        top: 10,
+                        right: 10,
+                        backgroundColor: Colors.light,
+                        padding: 8,
+                        borderRadius: 99,
+                        opacity: 0.7,
+                    }}
+                >
+                    <Ionicons
+                        name="settings-sharp"
+                        size={28}
+                        color={Colors.dark}
+                    />
+                </TouchableOpacity>
                 <ImageSwiper
                     isSwipable={vehicle?.images?.length > 1}
                     images={vehicle?.images}
@@ -613,16 +654,159 @@ const VehicleDetails = () => {
                                 },
                             ]}
                         >
-                            <View>
-                                <Text style={[Theme.MedTitle]}>
-                                    History File
-                                </Text>
+                            <View
+                                style={{
+                                    flexDirection: "row",
+                                    justifyContent: "space-between",
+                                }}
+                            >
+                                <Text style={[Theme.MedTitle]}>Logbook</Text>
+                                {logs && logs.length > 0 && (
+                                    <TouchableOpacity
+                                        onPress={() => {
+                                            router.replace(
+                                                `/new-logbook/${id}`
+                                            );
+                                        }}
+                                    >
+                                        <Feather
+                                            name="plus"
+                                            size={20}
+                                            color={Colors.dark}
+                                        />
+                                    </TouchableOpacity>
+                                )}
                             </View>
                             <View>
-                                {vehicle?.history ? (
-                                    <Text style={Theme.BodyText}>
-                                        {vehicle?.history}
-                                    </Text>
+                                {logs && logs.length > 0 ? (
+                                    <>
+                                        <FlashList
+                                            decelerationRate={"fast"}
+                                            viewabilityConfig={{
+                                                itemVisiblePercentThreshold: 80,
+                                            }}
+                                            onRefresh={() => refetch()}
+                                            refreshing={isLoading}
+                                            data={logs}
+                                            keyExtractor={(item) =>
+                                                item.id.toString()
+                                            }
+                                            estimatedItemSize={72}
+                                            showsVerticalScrollIndicator={false}
+                                            renderItem={({ item }) => (
+                                                <TouchableOpacity
+                                                    style={{
+                                                        flexDirection: "row",
+                                                        alignItems: "center",
+                                                        justifyContent:
+                                                            "space-between",
+                                                        paddingVertical: 8,
+                                                    }}
+                                                    onPress={() =>
+                                                        router.push(
+                                                            `/logbooks/item/${item.id}`
+                                                        )
+                                                    }
+                                                >
+                                                    <View
+                                                        style={{
+                                                            flexDirection:
+                                                                "row",
+                                                            alignItems:
+                                                                "center",
+                                                            gap: 10,
+                                                            width: "70%",
+                                                        }}
+                                                    >
+                                                        <View
+                                                            style={{
+                                                                padding: 10,
+                                                                borderRadius: 99,
+                                                                backgroundColor:
+                                                                    Colors.offgrey,
+                                                            }}
+                                                        >
+                                                            {
+                                                                LogbookTypes[
+                                                                    item.category -
+                                                                        1
+                                                                ].icon
+                                                            }
+                                                        </View>
+                                                        <View
+                                                            style={{
+                                                                flexDirection:
+                                                                    "column",
+                                                                gap: 5,
+                                                            }}
+                                                        >
+                                                            <Text
+                                                                style={[
+                                                                    Theme.Title,
+                                                                ]}
+                                                                numberOfLines={
+                                                                    1
+                                                                }
+                                                            >
+                                                                {item.title}
+                                                            </Text>
+                                                            <Text
+                                                                style={
+                                                                    Theme.ReviewText
+                                                                }
+                                                            >
+                                                                {new Date(
+                                                                    item.date
+                                                                ).toDateString()}
+                                                            </Text>
+                                                        </View>
+                                                    </View>
+                                                    <View>
+                                                        <Entypo
+                                                            name="chevron-right"
+                                                            size={20}
+                                                            color={Colors.dark}
+                                                        />
+                                                    </View>
+                                                </TouchableOpacity>
+                                            )}
+                                        />
+                                        <View
+                                            style={{
+                                                marginTop: 20,
+                                                gap: 15,
+                                                display: "flex",
+                                                flexDirection: "row",
+                                                justifyContent: "space-between",
+                                            }}
+                                        >
+                                            <TouchableOpacity
+                                                onPress={() => {}}
+                                                style={{
+                                                    backgroundColor:
+                                                        Colors.offgrey,
+                                                    height: 50,
+                                                    borderRadius: 50,
+                                                    flex: 1,
+                                                    display: "flex",
+                                                    justifyContent: "center",
+                                                    alignItems: "center",
+                                                }}
+                                            >
+                                                <Text
+                                                    style={{
+                                                        fontFamily: "font-b",
+                                                        fontSize: 16,
+                                                        color: Colors.dark,
+                                                        textAlign: "center",
+                                                        lineHeight: 50,
+                                                    }}
+                                                >
+                                                    View All
+                                                </Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    </>
                                 ) : (
                                     <TouchableOpacity
                                         onPress={() => {
