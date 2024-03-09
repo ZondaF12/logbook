@@ -23,7 +23,7 @@ const MyVehicle = ({ vehicle, vehicleHeight }: MyVehicleProps) => {
     const onPressCallback = () => {
         router.push({
             pathname: `/vehicle-details/${vehicle.id}`,
-            params: { user_id: vehicle.user_id },
+            params: { ...vehicle, images: JSON.stringify(vehicle.images) },
         });
     };
 

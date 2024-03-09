@@ -34,25 +34,43 @@ import { FlashList } from "@shopify/flash-list";
 import { LogbookTypes } from "../new-logbook/[id]";
 
 const VehicleDetails = () => {
-    const { id, user_id } = useLocalSearchParams<{
+    const {
+        id,
+        color,
+        engine_size,
+        images,
+        make,
+        model,
+        mot_date,
+        registered,
+        registration,
+        tax_date,
+        insurance_date,
+        service_date,
+        user_id,
+        year,
+        description,
+    } = useLocalSearchParams<{
         id: string;
+        color: string;
+        engine_size: string;
+        images: any;
+        make: string;
+        model: string;
+        mot_date: string;
+        registered: string;
+        registration: string;
+        tax_date: string;
+        insurance_date: string;
+        service_date: string;
         user_id: string;
+        year: string;
+        description: string;
     }>();
     const router = useRouter();
     const { session } = useAuth();
 
     const deviceHeight = useWindowDimensions().height;
-
-    const getVehicle = async () => {
-        const { data, error } = await supabase
-            .from("user_vehicles")
-            .select()
-            .eq("id", id);
-
-        if (data) {
-            return data[0];
-        }
-    };
 
     const getVehicleOwner = async () => {
         const { data, error } = await supabase
@@ -79,14 +97,6 @@ const VehicleDetails = () => {
 
         return [];
     };
-
-    const {
-        data: vehicle,
-        isLoading,
-        isError,
-        error,
-        refetch,
-    } = useQuery({ queryKey: ["vehicle"], queryFn: getVehicle });
 
     const {
         data: user,
@@ -118,7 +128,7 @@ const VehicleDetails = () => {
 
     const handleAction = async (action: any) => {};
 
-    if (vehicle?.length === 0 || !vehicle || !user || !logs) {
+    if (!user || !logs) {
         return <Loader />;
     }
 
@@ -154,7 +164,7 @@ const VehicleDetails = () => {
                                 router.push({
                                     pathname: `/vehicle-details/settings/${id}`,
                                     params: {
-                                        registration: vehicle?.registration,
+                                        registration: registration,
                                     },
                                 })
                             }
@@ -169,8 +179,8 @@ const VehicleDetails = () => {
                 )}
 
                 <ImageSwiper
-                    isSwipable={vehicle?.images?.length > 1}
-                    images={vehicle?.images}
+                    isSwipable={JSON.parse(images).length > 1}
+                    images={JSON.parse(images)}
                     height={deviceHeight * 0.5}
                 />
 
@@ -212,7 +222,7 @@ const VehicleDetails = () => {
                                     },
                                 ]}
                             >
-                                {vehicle.model}
+                                {model}
                             </Text>
                             <View
                                 style={{
@@ -233,7 +243,7 @@ const VehicleDetails = () => {
                                         },
                                     ]}
                                 >
-                                    {vehicle.make}
+                                    {make}
                                 </Text>
                             </View>
                         </Animated.View>
@@ -242,7 +252,7 @@ const VehicleDetails = () => {
                                 entering={FadeInRight.springify().delay(200)}
                                 style={[Theme.Title, { color: Colors.dark }]}
                             >
-                                {vehicle.registration}
+                                {registration}
                             </Animated.Text>
                         </View>
                     </View>
@@ -342,14 +352,11 @@ const VehicleDetails = () => {
                                         { color: Colors.light },
                                     ]}
                                 >
-                                    {!isNaN(
-                                        new Date(vehicle?.tax_date).getTime()
-                                    )
-                                        ? new Date(vehicle.tax_date) >
-                                          new Date()
+                                    {!isNaN(new Date(tax_date).getTime())
+                                        ? new Date(tax_date) > new Date()
                                             ? "Taxed"
                                             : "Not Taxed"
-                                        : vehicle?.tax_date}
+                                        : tax_date}
                                 </Text>
                             </TouchableOpacity>
                             <TouchableOpacity
@@ -377,7 +384,7 @@ const VehicleDetails = () => {
                                         { color: Colors.light },
                                     ]}
                                 >
-                                    {new Date(vehicle.mot_date) > new Date()
+                                    {new Date(mot_date) > new Date()
                                         ? "Valid"
                                         : "Not Valid"}
                                 </Text>
@@ -407,11 +414,8 @@ const VehicleDetails = () => {
                                         { color: Colors.light },
                                     ]}
                                 >
-                                    {new Date(
-                                        vehicle?.insurance_date
-                                    ).getTime() !== 0
-                                        ? new Date(vehicle.insurance_date) >
-                                          new Date()
+                                    {!isNaN(new Date(insurance_date).getTime())
+                                        ? new Date(insurance_date) > new Date()
                                             ? "Valid"
                                             : "Not Valid"
                                         : "Not Set"}
@@ -442,11 +446,8 @@ const VehicleDetails = () => {
                                         { color: Colors.light },
                                     ]}
                                 >
-                                    {new Date(
-                                        vehicle?.service_date
-                                    ).getTime() !== 0
-                                        ? new Date(vehicle.service_date) >
-                                          new Date()
+                                    {!isNaN(new Date(service_date).getTime())
+                                        ? new Date(service_date) > new Date()
                                             ? "Due"
                                             : "Not Due"
                                         : "Not Set"}
@@ -497,7 +498,7 @@ const VehicleDetails = () => {
                                     >
                                         <Text style={Theme.Subtitle}>Make</Text>
                                         <Text style={Theme.Caption}>
-                                            {vehicle.make}
+                                            {make}
                                         </Text>
                                     </View>
                                 </View>
@@ -530,7 +531,7 @@ const VehicleDetails = () => {
                                     >
                                         <Text style={Theme.Subtitle}>Year</Text>
                                         <Text style={Theme.Caption}>
-                                            {vehicle.year}
+                                            {year}
                                         </Text>
                                     </View>
                                 </View>
@@ -614,7 +615,7 @@ const VehicleDetails = () => {
                                 <Text style={[Theme.MedTitle]}>
                                     Description
                                 </Text>
-                                {vehicle?.description &&
+                                {description &&
                                     user_id === session?.user?.id && (
                                         <TouchableOpacity
                                             onPress={() => {
@@ -622,7 +623,7 @@ const VehicleDetails = () => {
                                                     pathname: `/vehicle-details/set-description/${id}`,
                                                     params: {
                                                         description:
-                                                            vehicle?.description,
+                                                            description,
                                                     },
                                                 });
                                             }}
@@ -637,9 +638,9 @@ const VehicleDetails = () => {
                             </View>
 
                             <View>
-                                {vehicle?.description ? (
+                                {description ? (
                                     <Text style={Theme.BodyText}>
-                                        {vehicle?.description}
+                                        {description}
                                     </Text>
                                 ) : user_id === session?.user?.id ? (
                                     <TouchableOpacity
@@ -723,8 +724,8 @@ const VehicleDetails = () => {
                                                 viewabilityConfig={{
                                                     itemVisiblePercentThreshold: 80,
                                                 }}
-                                                onRefresh={() => refetch()}
-                                                refreshing={isLoading}
+                                                // onRefresh={() => refetch()}
+                                                // refreshing={isLoading}
                                                 data={logs}
                                                 keyExtractor={(item) =>
                                                     item.id.toString()
