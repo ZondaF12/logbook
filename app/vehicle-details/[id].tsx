@@ -5,7 +5,7 @@ import {
     ScrollView,
     TouchableOpacity,
 } from "react-native";
-import React, { useEffect } from "react";
+import React from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useAuth } from "@/providers/AuthProvider";
 import { useQuery } from "@tanstack/react-query";
@@ -118,8 +118,6 @@ const VehicleDetails = () => {
 
     const handleAction = async (action: any) => {};
 
-    console.log(logs);
-
     if (vehicle?.length === 0 || !vehicle || !user || !logs) {
         return <Loader />;
     }
@@ -129,18 +127,19 @@ const VehicleDetails = () => {
             id={id}
             style={{
                 width: "100%",
-                minHeight: deviceHeight * 1.5 ?? 0,
+                // minHeight: deviceHeight * 1.5 ?? 0,
                 backgroundColor: "#FFF",
+                paddingBottom: 500,
             }}
         >
-            <ScrollView style={{ paddingBottom: 550 }}>
+            <ScrollView style={{ paddingBottom: 50 }}>
                 {user_id === session?.user?.id && (
                     <Animated.View
                         entering={FadeInRight.springify().delay(500)}
                         style={{
                             position: "absolute",
                             zIndex: 50,
-                            top: 10,
+                            top: 50,
                             right: 10,
                         }}
                     >
@@ -152,7 +151,12 @@ const VehicleDetails = () => {
                                 opacity: 0.7,
                             }}
                             onPress={() =>
-                                router.push(`/vehicle-details/settings/${id}`)
+                                router.push({
+                                    pathname: `/vehicle-details/settings/${id}`,
+                                    params: {
+                                        registration: vehicle?.registration,
+                                    },
+                                })
                             }
                         >
                             <Ionicons
@@ -886,66 +890,6 @@ const VehicleDetails = () => {
                             </View>
                         )}
                     </Animated.View>
-                    {user_id === session?.user?.id && (
-                        <View
-                            style={{
-                                marginTop: 20,
-                                gap: 15,
-                                display: "flex",
-                                flexDirection: "row",
-                                justifyContent: "space-between",
-                            }}
-                        >
-                            <TouchableOpacity
-                                onPress={() => {}}
-                                style={{
-                                    backgroundColor: Colors.secondary,
-                                    height: 50,
-                                    borderRadius: 10,
-                                    flex: 1,
-                                    display: "flex",
-                                    justifyContent: "center",
-                                    alignItems: "center",
-                                }}
-                            >
-                                <Text
-                                    style={{
-                                        fontFamily: "font-b",
-                                        fontSize: 16,
-                                        color: Colors.light,
-                                        textAlign: "center",
-                                        lineHeight: 50,
-                                    }}
-                                >
-                                    Car Handover
-                                </Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                onPress={() => {}}
-                                style={{
-                                    backgroundColor: Colors.secondary,
-                                    height: 50,
-                                    borderRadius: 10,
-                                    flex: 1,
-                                    display: "flex",
-                                    justifyContent: "center",
-                                    alignItems: "center",
-                                }}
-                            >
-                                <Text
-                                    style={{
-                                        fontFamily: "font-b",
-                                        fontSize: 16,
-                                        color: Colors.light,
-                                        textAlign: "center",
-                                        lineHeight: 50,
-                                    }}
-                                >
-                                    Delete Vehicle
-                                </Text>
-                            </TouchableOpacity>
-                        </View>
-                    )}
                 </View>
             </ScrollView>
         </ScrollView>

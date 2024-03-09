@@ -127,7 +127,7 @@ function RootLayoutNav() {
             />
             <Stack.Screen
                 name="vehicle-details/[id]"
-                options={{ headerShown: false, presentation: "modal" }}
+                options={{ headerShown: false }}
             />
             <Stack.Screen
                 name="vehicle-details/set-description/[id]"
@@ -135,7 +135,11 @@ function RootLayoutNav() {
             />
             <Stack.Screen
                 name="vehicle-details/settings/[id]"
-                options={{ headerShown: false, presentation: "modal" }}
+                options={{ headerShown: false }}
+            />
+            <Stack.Screen
+                name="vehicle-details/settings/handover/[id]"
+                options={{ headerShown: false }}
             />
             <Stack.Screen
                 name="edit-profile/[id]"

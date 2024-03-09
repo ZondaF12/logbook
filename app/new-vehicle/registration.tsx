@@ -182,7 +182,7 @@ const registration = () => {
                                 lineHeight: 50,
                             }}
                         >
-                            {"Search for vehicle"}
+                            Search for vehicle
                         </Text>
                     )}
                 </TouchableOpacity>
