@@ -65,16 +65,19 @@ const HandoverVehicle = () => {
             return;
         }
 
+        /* Update the user_vehicle to be new users id */
         const { data, error } = await supabase
             .from("user_vehicles")
             .update({ user_id: userId })
             .eq("id", id);
 
+        /* Update any of the vehicles logs to be new users id */
         const { data: vehicleData, error: vehicleError } = await supabase
             .from("vehicle_logs")
             .update({ user_id: userId })
             .eq("vehicle_id", id);
 
+        /* Move the images from the old user to the new user */
         const { data: vehicleList, error: storageListError } =
             await supabase.storage
                 .from("vehicleimages")
@@ -93,9 +96,51 @@ const HandoverVehicle = () => {
             }
         }
 
-        console.log(error, vehicleError, storageListError);
+        /* Move the logbook files from the old user to the new user */
+        const { data: vehicleStorageFileList, error: storageFileListError } =
+            await supabase.storage
+                .from("vehiclelogbooks")
+                .list(`${session?.user?.id}/${id}/files`);
 
-        if (error || vehicleError || storageListError) {
+        if (vehicleStorageFileList && vehicleStorageFileList.length > 0) {
+            const filesToMove = vehicleStorageFileList.map((x: any) => [
+                `${session?.user?.id}/${id}/files/${x.name}`,
+                `${userId}/${id}/files/${x.name}`,
+            ]);
+
+            for (let i = 0; i < filesToMove.length; i++) {
+                const { error: storageDeleteError } = await supabase.storage
+                    .from("vehiclelogbooks")
+                    .move(filesToMove[i][0], filesToMove[i][1]);
+            }
+        }
+
+        /* Move the logbook images from the old user to the new user */
+        const { data: vehicleStorageImageList, error: storageImageListError } =
+            await supabase.storage
+                .from("vehiclelogbooks")
+                .list(`${session?.user?.id}/${id}/images`);
+
+        if (vehicleStorageImageList && vehicleStorageImageList.length > 0) {
+            const filesToMove = vehicleStorageImageList.map((x: any) => [
+                `${session?.user?.id}/${id}/images/${x.name}`,
+                `${userId}/${id}/images/${x.name}`,
+            ]);
+
+            for (let i = 0; i < filesToMove.length; i++) {
+                const { error: storageDeleteError } = await supabase.storage
+                    .from("vehiclelogbooks")
+                    .move(filesToMove[i][0], filesToMove[i][1]);
+            }
+        }
+
+        if (
+            error ||
+            vehicleError ||
+            storageListError ||
+            storageFileListError ||
+            storageImageListError
+        ) {
             Alert.alert("Error", "There was an error handing over the vehicle");
         } else {
             router.push({
