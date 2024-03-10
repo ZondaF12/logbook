@@ -60,6 +60,25 @@ const HandoverVehicle = () => {
         refetch();
     }, [query]);
 
+    const handoverVehicle = async (userId: string, username: string) => {
+        Alert.alert(
+            "Handover Vehicle",
+            `Are you sure you want to transfer this vehicle to ${username}?`,
+            [
+                {
+                    text: "Cancel",
+                    style: "cancel",
+                },
+                {
+                    text: "Transfer",
+                    onPress: () => handleHandoverVehicle(userId),
+                    style: "destructive",
+                },
+            ],
+            { cancelable: false }
+        );
+    };
+
     const handleHandoverVehicle = async (userId: string) => {
         if (session?.user.id === userId) {
             return;
@@ -319,7 +338,7 @@ const HandoverVehicle = () => {
                         renderItem={({ item }: any) => (
                             <TouchableOpacity
                                 onPress={() =>
-                                    handleHandoverVehicle(item.user_id)
+                                    handoverVehicle(item.user_id, item.username)
                                 }
                             >
                                 <ProfileSearchResult
