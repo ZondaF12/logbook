@@ -6,6 +6,7 @@ import {
     TouchableOpacity,
     Keyboard,
     Alert,
+    ActivityIndicator,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
@@ -20,10 +21,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { FlashList } from "@shopify/flash-list";
 import { Divider } from "react-native-elements";
 import ProfileSearchResult from "@/components/Search/ProfileSearchResult";
-import { router, useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useAuth } from "@/providers/AuthProvider";
 import { supabase } from "@/lib/supabase";
 import { useQuery } from "@tanstack/react-query";
+import Loader from "@/components/Loader/Loader";
 
 const HandoverVehicle = () => {
     const { id, registration } = useLocalSearchParams<{
@@ -32,6 +34,8 @@ const HandoverVehicle = () => {
     }>();
 
     const [isSearching, setIsSearching] = useState<boolean>(false);
+    const [isHandingOver, setIsHandingOver] = useState<boolean>(false);
+    const [transferTo, setTransferTo] = useState<string>("");
 
     const [query, setQuery] = useState<string>("");
 
@@ -71,7 +75,10 @@ const HandoverVehicle = () => {
                 },
                 {
                     text: "Transfer",
-                    onPress: () => handleHandoverVehicle(userId),
+                    onPress: () => {
+                        setTransferTo(username);
+                        handleHandoverVehicle(userId);
+                    },
                     style: "destructive",
                 },
             ],
@@ -84,6 +91,7 @@ const HandoverVehicle = () => {
             return;
         }
 
+        setIsHandingOver(true);
         /* Update the user_vehicle to be new users id */
         const { data, error } = await supabase
             .from("user_vehicles")
@@ -153,6 +161,7 @@ const HandoverVehicle = () => {
             }
         }
 
+        setIsHandingOver(false);
         if (
             error ||
             vehicleError ||
@@ -167,6 +176,27 @@ const HandoverVehicle = () => {
             });
         }
     };
+
+    if (isHandingOver) {
+        return (
+            <SafeAreaView
+                style={{
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flex: 1,
+                    gap: 15,
+                }}
+            >
+                <Text style={[Theme.Subtitle]}>
+                    Transferring the vehicle to @{transferTo}
+                </Text>
+                <Animated.View>
+                    <ActivityIndicator />
+                </Animated.View>
+            </SafeAreaView>
+        );
+    }
 
     return (
         <>
