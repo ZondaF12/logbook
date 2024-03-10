@@ -3,7 +3,6 @@ import {
     Text,
     TouchableOpacity,
     Pressable,
-    ActivityIndicator,
     LayoutAnimation,
 } from "react-native";
 import React, { useEffect, useState } from "react";
@@ -28,10 +27,12 @@ import { supabase } from "@/lib/supabase";
 
 const ProfileDetails = () => {
     const { id } = useLocalSearchParams<{ id: string }>();
-    const [findHeight, setFindHeight] = useState<number | undefined>(undefined);
+    const [fleetHeight, setFleetHeight] = useState<number | undefined>(
+        undefined
+    );
 
     const router = useRouter();
-    const { session, logout } = useAuth();
+    const { logout } = useAuth();
 
     const getUserProfile = async () => {
         const { data, error } = await supabase
@@ -254,20 +255,20 @@ const ProfileDetails = () => {
                         paddingHorizontal: 15,
                     }}
                     onLayout={(e) => {
-                        if (findHeight) {
-                            e.nativeEvent.layout.height < findHeight &&
-                                setFindHeight(
+                        if (fleetHeight) {
+                            e.nativeEvent.layout.height < fleetHeight &&
+                                setFleetHeight(
                                     e.nativeEvent.layout.height / 2.5
                                 );
                         } else {
                             LayoutAnimation.configureNext(
                                 LayoutAnimation.Presets.easeInEaseOut
                             );
-                            setFindHeight(e.nativeEvent.layout.height / 2.5);
+                            setFleetHeight(e.nativeEvent.layout.height / 2.5);
                         }
                     }}
                 >
-                    {findHeight ? (
+                    {fleetHeight ? (
                         profile.public ? (
                             vehicles && vehicles?.length > 0 ? (
                                 <View
@@ -279,7 +280,7 @@ const ProfileDetails = () => {
                                     }}
                                 >
                                     <FlashList
-                                        estimatedItemSize={findHeight - 40}
+                                        estimatedItemSize={fleetHeight - 40}
                                         ListFooterComponent={
                                             <View
                                                 style={{
@@ -316,7 +317,7 @@ const ProfileDetails = () => {
                                         showsVerticalScrollIndicator={false}
                                         renderItem={({ item }) => (
                                             <MyVehicle
-                                                vehicleHeight={findHeight - 40}
+                                                vehicleHeight={fleetHeight - 40}
                                                 vehicle={item}
                                             />
                                         )}

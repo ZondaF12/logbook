@@ -26,6 +26,7 @@ import { StatusBar } from "expo-status-bar";
 import { supabase } from "@/lib/supabase";
 import { formatUserJoinedDate } from "@/utils/formatUserJoinedDate";
 import { decode } from "base64-arraybuffer";
+import * as Clipboard from "expo-clipboard";
 
 const imgDir = FileSystem.documentDirectory + "images/";
 
@@ -37,8 +38,6 @@ const ensureDirExists = async () => {
 };
 
 const MyProfile = () => {
-    const [findHeight, setFindHeight] = useState<number | undefined>(undefined);
-
     const { session, logout } = useAuth();
 
     const router = useRouter();
@@ -182,6 +181,10 @@ const MyProfile = () => {
                 ...updatedImages,
             ]);
         }
+    };
+
+    const shareProfileUrl = async () => {
+        await Clipboard.setStringAsync(`logbook://profile/${profile.user_id}`);
     };
 
     return (
@@ -409,6 +412,7 @@ const MyProfile = () => {
                             alignItems: "center",
                             justifyContent: "center",
                         }}
+                        onPress={shareProfileUrl}
                     >
                         <Text
                             style={[Theme.ButtonText, { color: Colors.light }]}
