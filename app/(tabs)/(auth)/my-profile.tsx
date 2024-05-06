@@ -25,8 +25,9 @@ import * as ImagePicker from "expo-image-picker";
 import { StatusBar } from "expo-status-bar";
 import { supabase } from "@/lib/supabase";
 import { formatUserJoinedDate } from "@/utils/formatUserJoinedDate";
-import { decode } from "base64-arraybuffer";
 import * as Clipboard from "expo-clipboard";
+import axios from "axios";
+import { kFormatter } from "@/utils/kFormatter";
 
 const imgDir = FileSystem.documentDirectory + "images/";
 
@@ -38,18 +39,17 @@ const ensureDirExists = async () => {
 };
 
 const MyProfile = () => {
-    const { session, logout } = useAuth();
+    const { logout } = useAuth();
 
     const router = useRouter();
 
     const fetchUser = async () => {
-        const { data, error } = await supabase
-            .from("users")
-            .select()
-            .eq("user_id", session?.user?.id);
+        const res = await axios.get(
+            `${process.env.EXPO_PUBLIC_API_URL}/api/v1/self`
+        );
 
-        if (data) {
-            return data[0];
+        if (res.data) {
+            return res.data;
         }
     };
 
@@ -83,24 +83,22 @@ const MyProfile = () => {
     }
 
     const uploadImage = async (uri: string) => {
-        const base64 = await FileSystem.readAsStringAsync(uri, {
-            encoding: "base64",
-        });
-        const filePath = `${session?.user?.id}/${new Date().getTime()}.jpeg`;
-
         try {
-            const { data, error } = await supabase.storage
-                .from("profile")
-                .upload(filePath, decode(base64), {
-                    contentType: "image/jpeg",
-                });
+            // TODO: Fix this to be the actual file name and type
+            const formData = new FormData();
+            formData.append("avatar", {
+                uri: uri,
+                name: "avatar.jpg",
+                type: "image/jpeg",
+            } as any);
 
-            if (data) {
-                const { data: url, error } = await supabase.storage
-                    .from("profile")
-                    .createSignedUrl(filePath, 600000000000);
+            const res = await axios.post(
+                `${process.env.EXPO_PUBLIC_API_URL}/api/v1/self/avatar`,
+                formData
+            );
 
-                return url?.signedUrl;
+            if (res.status === 200) {
+                return res.data;
             }
         } catch (error) {
             console.warn(error);
@@ -209,7 +207,7 @@ const MyProfile = () => {
                     </Animated.Text>
                     <Animated.View entering={FadeInRight.springify()}>
                         <TouchableOpacity
-                            onPress={() => logout()}
+                            onPress={() => logout!()}
                             style={{
                                 borderColor: Colors.grey,
                                 borderWidth: 1,
@@ -336,25 +334,29 @@ const MyProfile = () => {
                                 >
                                     4 Vehicles
                                 </Text>
-                                <Text
-                                    style={[
-                                        Theme.BodyText,
-                                        { color: Colors.dark },
-                                    ]}
+                                <View
+                                    style={{
+                                        display: "flex",
+                                        flexDirection: "row",
+                                        gap: 10,
+                                        alignItems: "center",
+                                    }}
                                 >
-                                    Joined{" "}
-                                    {formatUserJoinedDate(profile.created_at)}
-                                </Text>
+                                    <Text style={[Theme.BodyText]}>
+                                        {kFormatter(profile.followers)}{" "}
+                                        followers
+                                    </Text>
+                                    <Text style={[Theme.BodyText]}>
+                                        {kFormatter(profile.following)}{" "}
+                                        following
+                                    </Text>
+                                </View>
                             </View>
                         </View>
                     </View>
-                    {profile?.bio ? (
+                    {profile?.bio && (
                         <Text style={[Theme.BodyText, { color: Colors.grey }]}>
                             {profile.bio}
-                        </Text>
-                    ) : (
-                        <Text style={[Theme.BodyText, { color: Colors.grey }]}>
-                            ahhhhh
                         </Text>
                     )}
                 </View>

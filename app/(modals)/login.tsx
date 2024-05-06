@@ -22,9 +22,13 @@ type FormInputs = {
 const Login = () => {
     const [error, setError] = useState<string | null>(null);
     const dimensions = useWindowDimensions();
-    const { session, appleLogin } = useAuth();
+    const { authState, login } = useAuth();
 
-    if (session) {
+    const handleRegister = async () => {
+        const res = await login!("ruaridhbell73@googlemail.com", "Test123");
+    };
+
+    if (authState?.authenticated) {
         return <Redirect href={"/"} />;
     }
 
@@ -81,7 +85,7 @@ const Login = () => {
                         cornerRadius={5}
                         style={{ width: "100%", height: 50 }}
                         onPress={async () => {
-                            appleLogin();
+                            handleRegister();
                         }}
                     />
                 </View>

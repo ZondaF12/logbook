@@ -5,7 +5,7 @@ import { useAuth } from "@/providers/AuthProvider";
 import Colors from "@/constants/Colors";
 import { Divider, Image } from "react-native-elements";
 import { Theme } from "@/constants/Styles";
-import { Feather, Ionicons } from "@expo/vector-icons";
+import { Feather, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import ImageSwiper from "../ImageSwiper/ImageSwiper";
 
 interface MyVehicleProps {
@@ -17,13 +17,16 @@ const MyVehicle = ({ vehicle, vehicleHeight }: MyVehicleProps) => {
     const router = useRouter();
 
     const bottomOffset = 15;
-    const descriptionCardHeight = 75;
+    const descriptionCardHeight = 80;
     const imageheight = vehicleHeight - descriptionCardHeight - bottomOffset;
 
     const onPressCallback = () => {
         router.push({
             pathname: `/vehicle-details/${vehicle.id}`,
-            params: { ...vehicle, images: JSON.stringify(vehicle.images) },
+            params: {
+                ...vehicle,
+                images: JSON.stringify(vehicle.images.split(",")),
+            },
         });
     };
 
@@ -55,10 +58,10 @@ const MyVehicle = ({ vehicle, vehicleHeight }: MyVehicleProps) => {
             >
                 <TouchableOpacity activeOpacity={1} onPress={onPressCallback}>
                     <ImageSwiper
-                        images={vehicle.images}
+                        images={vehicle.images.split(",")}
                         height={imageheight}
                         onPressCallback={onPressCallback}
-                        isSwipable={vehicle.images.length > 1}
+                        isSwipable={vehicle?.images?.length > 1}
                     />
 
                     <View
@@ -66,6 +69,7 @@ const MyVehicle = ({ vehicle, vehicleHeight }: MyVehicleProps) => {
                             display: "flex",
                             justifyContent: "space-evenly",
                             paddingHorizontal: 15,
+                            paddingVertical: 10,
                             backgroundColor: "#FFF",
                             borderEndStartRadius: 10,
                             borderEndEndRadius: 10,
@@ -89,52 +93,76 @@ const MyVehicle = ({ vehicle, vehicleHeight }: MyVehicleProps) => {
                                     justifyContent: "center",
                                 }}
                             >
-                                <Text numberOfLines={1} style={Theme.Title}>
-                                    {vehicle.registration}
+                                <Text numberOfLines={1} style={Theme.BodyText}>
+                                    {vehicle.make} {vehicle.model}
                                 </Text>
                             </View>
-
                             <View
                                 style={{
                                     display: "flex",
                                     gap: 5,
+                                    alignItems: "center",
                                     justifyContent: "center",
                                 }}
                             >
+                                <Text numberOfLines={1} style={Theme.Title}>
+                                    {vehicle.registration}
+                                </Text>
+                            </View>
+                        </View>
+                        <View
+                            style={{
+                                gap: 20,
+                                display: "flex",
+                                flexDirection: "row",
+                            }}
+                        >
+                            <View
+                                style={{
+                                    flexDirection: "row",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    gap: 5,
+                                }}
+                            >
+                                <MaterialIcons
+                                    name="access-time"
+                                    size={20}
+                                    color={Colors.grey}
+                                />
                                 <Text
                                     numberOfLines={1}
                                     style={[
-                                        Theme.Caption,
-                                        {
-                                            color: Colors.grey,
-                                            fontFamily: "font-b",
-                                        },
+                                        Theme.BodySecondary,
+                                        { textAlign: "center" },
                                     ]}
                                 >
-                                    {vehicle.make}
+                                    {vehicle.year}
                                 </Text>
-                                <View
-                                    style={{
-                                        display: "flex",
-                                        flexDirection: "row",
-                                        alignItems: "baseline",
-                                        gap: 5,
-                                    }}
+                            </View>
+                            <View
+                                style={{
+                                    flexDirection: "row",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    gap: 5,
+                                }}
+                            >
+                                <MaterialIcons
+                                    name="speed"
+                                    size={20}
+                                    color={Colors.grey}
+                                />
+                                <Text
+                                    numberOfLines={1}
+                                    style={[
+                                        Theme.BodySecondary,
+                                        { textAlign: "center" },
+                                    ]}
                                 >
-                                    <Text
-                                        numberOfLines={1}
-                                        style={[
-                                            Theme.Caption,
-                                            {
-                                                color: Colors.grey,
-
-                                                textAlign: "right",
-                                            },
-                                        ]}
-                                    >
-                                        {vehicle.model}
-                                    </Text>
-                                </View>
+                                    16,480 mi
+                                    {/* {vehicle.milage} mi */}
+                                </Text>
                             </View>
                         </View>
                     </View>

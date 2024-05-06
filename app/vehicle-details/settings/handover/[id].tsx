@@ -25,7 +25,6 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useAuth } from "@/providers/AuthProvider";
 import { supabase } from "@/lib/supabase";
 import { useQuery } from "@tanstack/react-query";
-import Loader from "@/components/Loader/Loader";
 
 const HandoverVehicle = () => {
     const { id, registration } = useLocalSearchParams<{

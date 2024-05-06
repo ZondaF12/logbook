@@ -11,7 +11,6 @@ import { useAuth } from "@/providers/AuthProvider";
 import { useQuery } from "@tanstack/react-query";
 import Loader from "@/components/Loader/Loader";
 import ImageSwiper from "@/components/ImageSwiper/ImageSwiper";
-import { supabase } from "@/lib/supabase";
 import { Theme } from "@/constants/Styles";
 import Colors from "@/constants/Colors";
 import {
@@ -32,6 +31,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { FlashList } from "@shopify/flash-list";
 import { LogbookTypes } from "../new-logbook/[id]";
+import axios from "axios";
 
 const VehicleDetails = () => {
     const {
@@ -68,32 +68,31 @@ const VehicleDetails = () => {
         description: string;
     }>();
     const router = useRouter();
-    const { session } = useAuth();
+    const { authState } = useAuth();
 
     const deviceHeight = useWindowDimensions().height;
 
     const getVehicleOwner = async () => {
-        const { data, error } = await supabase
-            .from("users")
-            .select()
-            .eq("user_id", user_id);
+        const { data } = await axios.get(
+            `${process.env.EXPO_PUBLIC_API_URL}/api/v1/user/${user_id}`
+        );
 
         if (data) {
-            return data[0];
+            return data;
         }
     };
 
     const getVehicleLogs = async () => {
-        if (session?.user?.id === user_id) {
-            const { data, error } = await supabase
-                .from("vehicle_logs")
-                .select()
-                .eq("vehicle_id", id);
+        // if (authState?.userId === user_id) {
+        //     const { data, error } = await supabase
+        //         .from("vehicle_logs")
+        //         .select()
+        //         .eq("vehicle_id", id);
 
-            if (data) {
-                return data;
-            }
-        }
+        //     if (data) {
+        //         return data;
+        //     }
+        // }
 
         return [];
     };
@@ -117,7 +116,7 @@ const VehicleDetails = () => {
     });
 
     const handleGoToProfile = () => {
-        if (session?.user.id === user.user_id) {
+        if (authState?.userId === (user?.user_id).toString()) {
             router.navigate("/(tabs)/(auth)/my-profile");
         } else {
             router.replace({
@@ -143,7 +142,7 @@ const VehicleDetails = () => {
             }}
         >
             <ScrollView style={{ paddingBottom: 50 }}>
-                {user_id === session?.user?.id && (
+                {user_id === authState?.userId && (
                     <Animated.View
                         entering={FadeInRight.springify().delay(500)}
                         style={{
@@ -616,7 +615,7 @@ const VehicleDetails = () => {
                                     Description
                                 </Text>
                                 {description &&
-                                    user_id === session?.user?.id && (
+                                    user_id === authState?.userId && (
                                         <TouchableOpacity
                                             onPress={() => {
                                                 router.push({
@@ -642,7 +641,7 @@ const VehicleDetails = () => {
                                     <Text style={Theme.BodyText}>
                                         {description}
                                     </Text>
-                                ) : user_id === session?.user?.id ? (
+                                ) : user_id === authState?.userId ? (
                                     <TouchableOpacity
                                         onPress={() => {
                                             router.push(
@@ -680,7 +679,7 @@ const VehicleDetails = () => {
                             </View>
                         </View>
 
-                        {user_id === session?.user?.id && (
+                        {user_id === authState?.userId && (
                             <View
                                 style={[
                                     Theme.Container,
@@ -727,7 +726,7 @@ const VehicleDetails = () => {
                                                 // onRefresh={() => refetch()}
                                                 // refreshing={isLoading}
                                                 data={logs}
-                                                keyExtractor={(item) =>
+                                                keyExtractor={(item: any) =>
                                                     item.id.toString()
                                                 }
                                                 estimatedItemSize={72}

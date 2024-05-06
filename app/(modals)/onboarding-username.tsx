@@ -59,8 +59,6 @@ const OnboardingUsername = () => {
                     setIsSubmitting(false);
                     router.push("/onboarding-firstname");
                 }
-
-                console.log(error);
             }
 
             // router.push("/onboarding/profile");
