@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import {
     Tabs,
     useRootNavigationState,
@@ -7,9 +7,7 @@ import {
 } from "expo-router";
 import { useAuth } from "@/providers/AuthProvider";
 import {
-    AntDesign,
     Feather,
-    FontAwesome,
     Ionicons,
     MaterialCommunityIcons,
     MaterialIcons,
@@ -20,17 +18,17 @@ import Colors from "@/constants/Colors";
 
 export default function TabLayout() {
     const segments = useSegments();
-    const { session } = useAuth();
+    const { authState } = useAuth();
     const router = useRouter();
 
     const rootNavigationState = useRootNavigationState();
     if (!rootNavigationState?.key) return null;
 
-    useEffect(() => {
-        if (!session && segments[1] === "(auth)") {
-            router.replace("/login");
-        }
-    }, [segments[1], session]);
+    // useEffect(() => {
+    //     if (!authState?.authenticated && segments[1] === "(auth)") {
+    //         router.replace("/login");
+    //     }
+    // }, [segments[1], authState]);
 
     return (
         <Tabs
@@ -62,7 +60,7 @@ export default function TabLayout() {
                 listeners={{
                     tabPress: (e) => {
                         e.preventDefault();
-                        if (!session) {
+                        if (!authState?.authenticated) {
                             router.push("/(modals)/login");
                         } else {
                             router.push("/search");
@@ -106,7 +104,7 @@ export default function TabLayout() {
                 listeners={{
                     tabPress: (e) => {
                         e.preventDefault();
-                        if (!session) {
+                        if (!authState?.authenticated) {
                             router.push("/(modals)/login");
                         } else {
                             router.push("/history");
@@ -130,7 +128,7 @@ export default function TabLayout() {
                 listeners={{
                     tabPress: (e) => {
                         e.preventDefault();
-                        if (!session) {
+                        if (!authState?.authenticated) {
                             router.push("/(modals)/login");
                         } else {
                             router.push("/my-profile");

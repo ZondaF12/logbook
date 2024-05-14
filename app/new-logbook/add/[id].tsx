@@ -32,6 +32,8 @@ import { supabase } from "@/lib/supabase";
 import { decode } from "base64-arraybuffer";
 import { LogbookTypes } from "../[id]";
 import { categories } from "@/types/catgeories";
+import axios from "axios";
+import uuid from "react-native-uuid";
 
 const imgDir = FileSystem.documentDirectory + "images/";
 const fileDir = FileSystem.documentDirectory + "files/";
@@ -49,66 +51,53 @@ const AddLogbook = () => {
         logId: string;
     }>();
 
-    const { session } = useAuth();
     const router = useRouter();
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const [images, setImages] = useState<
-        { localImage: string; serverImage?: string }[]
-    >([]);
+    const [images, setImages] = useState<{ localImage: string }[]>([]);
 
-    const [files, setFiles] = useState<
-        { localFile: any; serverFile?: string }[]
-    >([]);
+    const [files, setFiles] = useState<{ localFile: any }[]>([]);
 
-    const uploadImage = async (uri: string) => {
-        const base64 = await FileSystem.readAsStringAsync(uri, {
-            encoding: "base64",
-        });
-        const filePath = `${
-            session?.user?.id
-        }/${id}/images/${new Date().getTime()}.jpeg`;
-
+    const uploadImage = async (uri: string, id: number) => {
         try {
-            const { data, error } = await supabase.storage
-                .from("vehiclelogbooks")
-                .upload(filePath, decode(base64), {
-                    contentType: "image/jpeg",
-                });
+            const formData = new FormData();
+            formData.append("media", {
+                uri: uri,
+                name: `${uuid.v4()}.jpeg`,
+                type: "image/jpeg",
+            } as any);
 
-            if (data) {
-                const { data: url, error } = await supabase.storage
-                    .from("vehiclelogbooks")
-                    .createSignedUrl(filePath, 600000000000);
+            const res = await axios.post(
+                `${process.env.EXPO_PUBLIC_API_URL}/api/v1/log/${id}/media`,
+                formData
+            );
 
-                return url?.signedUrl;
+            if (res.status === 200) {
+                return res.data;
             }
         } catch (error) {
             console.warn(error);
         }
     };
 
-    const uploadFile = async (uri: string, name: string) => {
-        const base64 = await FileSystem.readAsStringAsync(uri, {
-            encoding: "base64",
-        });
-
-        const filePath = `${session?.user?.id}/${id}/files/${name}`;
-
+    const uploadFile = async (uri: string, name: string, id: number) => {
         try {
-            const { data, error } = await supabase.storage
-                .from("vehiclelogbooks")
-                .upload(filePath, decode(base64));
+            const formData = new FormData();
+            formData.append("media", {
+                uri: uri,
+                name: name,
+            } as any);
 
-            if (data) {
-                const { data: url, error } = await supabase.storage
-                    .from("vehiclelogbooks")
-                    .createSignedUrl(filePath, 600000000000);
+            const res = await axios.post(
+                `${process.env.EXPO_PUBLIC_API_URL}/api/v1/log/${id}/media`,
+                formData
+            );
 
-                return url?.signedUrl;
+            if (res.status === 200) {
+                return res.data;
             }
         } catch (error) {
             console.warn(error);
@@ -167,25 +156,6 @@ const AddLogbook = () => {
                 ...prevImages,
                 ...savedImages.map((image) => ({ localImage: image })),
             ]);
-            const uploadedImages = await Promise.all(
-                savedImages.map(async (savedImage: any) => {
-                    return await uploadImage(savedImage);
-                })
-            );
-
-            const image_urls: string[] = [];
-            for (const item of uploadedImages) {
-                image_urls.push(item!);
-            }
-
-            const updatedImages = savedImages.map((savedImage, index) => ({
-                localImage: savedImage,
-                serverImage: image_urls[index],
-            }));
-            setImages((prevImages: any) => [
-                ...prevImages.filter((image: any) => image.serverImage != null),
-                ...updatedImages,
-            ]);
 
             setIsUploading(false);
         }
@@ -208,26 +178,6 @@ const AddLogbook = () => {
             setFiles((prevFiles: any) => [
                 ...prevFiles,
                 ...savedFiles.map((file) => ({ localFile: file })),
-            ]);
-
-            const uploadedFiles = await Promise.all(
-                savedFiles.map(async (savedFile: any) => {
-                    return await uploadFile(savedFile.uri, savedFile.name);
-                })
-            );
-
-            const file_urls: string[] = [];
-            for (const item of uploadedFiles) {
-                file_urls.push(item!);
-            }
-
-            const updatedFiles = savedFiles.map((savedFile, index) => ({
-                localFile: savedFile,
-                serverFile: file_urls[index],
-            }));
-            setFiles((prevFiles: any) => [
-                ...prevFiles.filter((image: any) => image.serverFile != null),
-                ...updatedFiles,
             ]);
 
             setIsUploading(false);
@@ -256,39 +206,67 @@ const AddLogbook = () => {
 
     const selectedCategory = watch("categoryId");
 
-    useEffect(() => {
-        setValue(
-            "files",
-            files.map((file) => file.serverFile || "")
-        );
-    }, [files]);
+    // useEffect(() => {
+    //     setValue(
+    //         "files",
+    //         files.map((file) => file.serverFile || "")
+    //     );
+    // }, [files]);
 
-    useEffect(() => {
-        setValue(
-            "images",
-            images.map((image) => image.serverImage || "")
-        );
-    }, [images]);
+    // useEffect(() => {
+    //     setValue(
+    //         "images",
+    //         images.map((image) => image.serverImage || "")
+    //     );
+    // }, [images]);
 
     const dimensions = useWindowDimensions();
 
     const onSubmit: SubmitHandler<any> = async (values) => {
+        setIsSubmitting(true);
         const newLog = {
-            user_id: session?.user?.id,
             vehicle_id: id,
             title: values.title,
             description: values.description,
             date: values.date,
             category: values.categoryId,
-            cost: values.cost,
+            cost: parseFloat(values.cost),
             notes: values.notes,
-            images: values.images,
-            files: values.files,
         };
 
-        const { error } = await supabase.from("vehicle_logs").insert(newLog);
+        const res = await axios.post(
+            `${process.env.EXPO_PUBLIC_API_URL}/api/v1/log`,
+            {
+                ...newLog,
+            }
+        );
+
+        if (res.status !== 200) {
+            setError("An error occurred while adding the log");
+            return;
+        }
+
+        if (images.length > 0) {
+            images.map(async (savedImage: any) => {
+                return await uploadImage(
+                    savedImage.localImage,
+                    res.data.log_id
+                );
+            });
+        }
+
+        if (files.length > 0) {
+            files.map(async (savedFile: any) => {
+                return await uploadFile(
+                    savedFile.localFile.uri,
+                    savedFile.localFile.name,
+                    res.data.log_id
+                );
+            });
+        }
 
         if (!error) {
+            setIsSubmitting(false);
             router.navigate("/");
         }
     };
@@ -423,7 +401,7 @@ const AddLogbook = () => {
                                                         borderRadius: 10,
                                                     }}
                                                 />
-                                                {!image.serverImage && (
+                                                {/* {!image.serverImage && (
                                                     <View
                                                         style={{
                                                             position:
@@ -445,7 +423,7 @@ const AddLogbook = () => {
                                                             color="#FFF"
                                                         />
                                                     </View>
-                                                )}
+                                                )} */}
                                                 <TouchableOpacity
                                                     style={{
                                                         position: "absolute",
@@ -822,7 +800,7 @@ const AddLogbook = () => {
                                                     </Text>
                                                 </View>
 
-                                                {!file.serverFile && (
+                                                {/* {!file.serverFile && (
                                                     <View
                                                         style={{
                                                             position:
@@ -844,7 +822,7 @@ const AddLogbook = () => {
                                                             color="#FFF"
                                                         />
                                                     </View>
-                                                )}
+                                                )} */}
                                                 <TouchableOpacity
                                                     style={{
                                                         position: "absolute",

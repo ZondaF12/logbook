@@ -53,6 +53,12 @@ export const Theme = StyleSheet.create({
         color: Colors.dark,
         lineHeight: 20,
     },
+    BodySecondary: {
+        fontFamily: "font-m",
+        fontSize: 16,
+        color: Colors.grey,
+        lineHeight: 20,
+    },
     ReviewText: {
         fontFamily: "font-m",
         fontSize: 14,

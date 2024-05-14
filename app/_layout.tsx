@@ -3,7 +3,7 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import * as Updates from "expo-updates";
-import AuthProvider, { useAuth } from "@/providers/AuthProvider";
+import { AuthProvider, useAuth } from "@/providers/AuthProvider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 export {
@@ -56,7 +56,7 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
-    const { session } = useAuth();
+    const { authState } = useAuth();
 
     async function onFetchUpdateAsync() {
         try {
@@ -73,7 +73,11 @@ function RootLayoutNav() {
     }
 
     useEffect(() => {
-        if (session || session === null) {
+        if (
+            authState?.authenticated ||
+            authState?.authenticated === null ||
+            !authState?.authenticated
+        ) {
             // This tells the splash screen to hide immediately! If we call this after
             // `setAppIsReady`, then we may see a blank screen while the app is
             // loading its initial state and rendering its first pixels. So instead,
@@ -81,7 +85,7 @@ function RootLayoutNav() {
             // performed layout.
             void SplashScreen.hideAsync();
         }
-    }, [session]);
+    }, [authState]);
 
     useEffect(() => {
         if (!__DEV__) {

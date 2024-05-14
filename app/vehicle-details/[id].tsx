@@ -11,16 +11,17 @@ import { useAuth } from "@/providers/AuthProvider";
 import { useQuery } from "@tanstack/react-query";
 import Loader from "@/components/Loader/Loader";
 import ImageSwiper from "@/components/ImageSwiper/ImageSwiper";
-import { supabase } from "@/lib/supabase";
 import { Theme } from "@/constants/Styles";
 import Colors from "@/constants/Colors";
 import {
+    AntDesign,
     Entypo,
     Feather,
     FontAwesome,
     FontAwesome5,
     Ionicons,
     MaterialCommunityIcons,
+    MaterialIcons,
 } from "@expo/vector-icons";
 import { Divider, Image } from "react-native-elements";
 import MotSvgComponent from "@/assets/svg/MotSvg";
@@ -31,6 +32,7 @@ import Animated, {
     FadeInUp,
 } from "react-native-reanimated";
 import { FlashList } from "@shopify/flash-list";
+import axios from "axios";
 import { LogbookTypes } from "../new-logbook/[id]";
 
 const VehicleDetails = () => {
@@ -50,6 +52,7 @@ const VehicleDetails = () => {
         user_id,
         year,
         description,
+        mileage,
     } = useLocalSearchParams<{
         id: string;
         color: string;
@@ -66,33 +69,32 @@ const VehicleDetails = () => {
         user_id: string;
         year: string;
         description: string;
+        mileage: string;
     }>();
     const router = useRouter();
-    const { session } = useAuth();
+    const { authState } = useAuth();
 
     const deviceHeight = useWindowDimensions().height;
 
     const getVehicleOwner = async () => {
-        const { data, error } = await supabase
-            .from("users")
-            .select()
-            .eq("user_id", user_id);
+        const { data } = await axios.get(
+            `${process.env.EXPO_PUBLIC_API_URL}/api/v1/user/${user_id}`
+        );
 
         if (data) {
-            return data[0];
+            return data;
         }
     };
 
     const getVehicleLogs = async () => {
-        if (session?.user?.id === user_id) {
-            const { data, error } = await supabase
-                .from("vehicle_logs")
-                .select()
-                .eq("vehicle_id", id);
+        if (authState?.userId === user_id) {
+            const { data } = await axios.get(
+                `${process.env.EXPO_PUBLIC_API_URL}/api/v1/log/${id}`
+            );
 
-            if (data) {
-                return data;
-            }
+            console.log(data);
+
+            return data;
         }
 
         return [];
@@ -117,7 +119,7 @@ const VehicleDetails = () => {
     });
 
     const handleGoToProfile = () => {
-        if (session?.user.id === user.user_id) {
+        if (authState?.userId === (user?.user_id).toString()) {
             router.navigate("/(tabs)/(auth)/my-profile");
         } else {
             router.replace({
@@ -128,7 +130,7 @@ const VehicleDetails = () => {
 
     const handleAction = async (action: any) => {};
 
-    if (!user || !logs) {
+    if (!user || isLoadingLogs) {
         return <Loader />;
     }
 
@@ -143,7 +145,7 @@ const VehicleDetails = () => {
             }}
         >
             <ScrollView style={{ paddingBottom: 50 }}>
-                {user_id === session?.user?.id && (
+                {user_id === authState?.userId && (
                     <Animated.View
                         entering={FadeInRight.springify().delay(500)}
                         style={{
@@ -318,281 +320,212 @@ const VehicleDetails = () => {
                             </View>
                         </View>
 
-                        <View
-                            style={{
-                                display: "flex",
-                                flexDirection: "row",
-                                gap: 5,
-                                justifyContent: "space-between",
-                                alignItems: "center",
+                        <ScrollView
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            contentContainerStyle={{
+                                gap: 15,
                             }}
                         >
-                            <TouchableOpacity
+                            <View
                                 style={{
                                     display: "flex",
                                     justifyContent: "center",
-                                    alignItems: "center",
-                                    backgroundColor: Colors.primary,
                                     borderRadius: 10,
-                                    padding: 10,
+                                    borderWidth: 1,
+                                    borderColor: Colors.light,
+                                    paddingVertical: 10,
+                                    paddingHorizontal: 15,
                                     gap: 5,
-                                    width: "23%",
-                                    height: 70,
+                                    width: 115,
                                 }}
-                                onPress={() => handleAction("tax")}
                             >
-                                <TaxSvgComponent
-                                    height={25}
-                                    width={25}
-                                    color={Colors.light}
+                                <MaterialIcons
+                                    name="access-time"
+                                    size={24}
+                                    color={Colors.grey}
                                 />
-                                <Text
-                                    style={[
-                                        Theme.BodyText,
-                                        { color: Colors.light },
-                                    ]}
-                                >
-                                    {!isNaN(new Date(tax_date).getTime())
-                                        ? new Date(tax_date) > new Date()
-                                            ? "Taxed"
-                                            : "Not Taxed"
-                                        : tax_date}
-                                </Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={{
-                                    display: "flex",
-                                    justifyContent: "center",
-                                    alignItems: "center",
-                                    backgroundColor: Colors.primary,
-                                    borderRadius: 10,
-                                    padding: 10,
-                                    gap: 5,
-                                    width: "23%",
-                                    height: 70,
-                                }}
-                                onPress={() => handleAction("tax")}
-                            >
-                                <MotSvgComponent
-                                    height={25}
-                                    width={25}
-                                    color={Colors.light}
-                                />
-                                <Text
-                                    style={[
-                                        Theme.BodyText,
-                                        { color: Colors.light },
-                                    ]}
-                                >
-                                    {new Date(mot_date) > new Date()
-                                        ? "Valid"
-                                        : "Not Valid"}
-                                </Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={{
-                                    display: "flex",
-                                    justifyContent: "center",
-                                    alignItems: "center",
-                                    backgroundColor: Colors.primary,
-                                    borderRadius: 10,
-                                    padding: 10,
-                                    gap: 5,
-                                    width: "23%",
-                                    height: 70,
-                                }}
-                                onPress={() => handleAction("tax")}
-                            >
-                                <FontAwesome
-                                    name="shield"
-                                    size={25}
-                                    color={Colors.light}
-                                />
-                                <Text
-                                    style={[
-                                        Theme.BodyText,
-                                        { color: Colors.light },
-                                    ]}
-                                >
-                                    {!isNaN(new Date(insurance_date).getTime())
-                                        ? new Date(insurance_date) > new Date()
-                                            ? "Valid"
-                                            : "Not Valid"
-                                        : "Not Set"}
-                                </Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={{
-                                    display: "flex",
-                                    justifyContent: "center",
-                                    alignItems: "center",
-                                    backgroundColor: Colors.primary,
-                                    borderRadius: 10,
-                                    padding: 10,
-                                    gap: 5,
-                                    width: "23%",
-                                    height: 70,
-                                }}
-                                onPress={() => handleAction("tax")}
-                            >
-                                <Feather
-                                    name="tool"
-                                    size={25}
-                                    color={Colors.light}
-                                />
-                                <Text
-                                    style={[
-                                        Theme.BodyText,
-                                        { color: Colors.light },
-                                    ]}
-                                >
-                                    {!isNaN(new Date(service_date).getTime())
-                                        ? new Date(service_date) > new Date()
-                                            ? "Due"
-                                            : "Not Due"
-                                        : "Not Set"}
-                                </Text>
-                            </TouchableOpacity>
-                        </View>
-
-                        <View
-                            style={[
-                                Theme.Container,
-                                {
-                                    gap: 15,
-                                    paddingVertical: 20,
-                                    borderRadius: 10,
-                                },
-                            ]}
-                        >
-                            <View>
-                                <Text style={[Theme.MedTitle]}>Technical</Text>
+                                <View style={{}}>
+                                    <Text
+                                        style={[Theme.Title, { paddingTop: 8 }]}
+                                    >
+                                        {year}
+                                    </Text>
+                                    <Text
+                                        style={[
+                                            Theme.ReviewText,
+                                            { color: Colors.grey },
+                                        ]}
+                                    >
+                                        Year
+                                    </Text>
+                                </View>
                             </View>
-                            <View style={{ flexDirection: "column", gap: 10 }}>
-                                <View
-                                    style={{
-                                        flexDirection: "row",
-                                    }}
-                                >
-                                    <View
-                                        style={{
-                                            backgroundColor: Colors.primary,
-                                            justifyContent: "center",
-                                            alignItems: "center",
-                                            borderRadius: 99,
-                                            padding: 8,
-                                            marginRight: 10,
-                                        }}
+                            <View
+                                style={{
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    borderRadius: 10,
+                                    borderWidth: 1,
+                                    borderColor: Colors.light,
+                                    paddingVertical: 10,
+                                    paddingHorizontal: 15,
+                                    gap: 5,
+                                    width: 115,
+                                }}
+                            >
+                                <MaterialIcons
+                                    name="speed"
+                                    size={24}
+                                    color={Colors.grey}
+                                />
+                                <View style={{}}>
+                                    <Text
+                                        style={[Theme.Title, { paddingTop: 8 }]}
                                     >
-                                        <FontAwesome5
-                                            name="car"
-                                            size={25}
-                                            color={Colors.light}
-                                        />
-                                    </View>
-                                    <View
-                                        style={{
-                                            flexDirection: "column",
-                                            justifyContent: "center",
-                                        }}
+                                        {mileage}
+                                    </Text>
+                                    <Text
+                                        style={[
+                                            Theme.ReviewText,
+                                            { color: Colors.grey },
+                                        ]}
                                     >
-                                        <Text style={Theme.Subtitle}>Make</Text>
-                                        <Text style={Theme.Caption}>
-                                            {make}
-                                        </Text>
-                                    </View>
+                                        Miles
+                                    </Text>
                                 </View>
-                                <View
-                                    style={{
-                                        flexDirection: "row",
-                                    }}
-                                >
-                                    <View
-                                        style={{
-                                            backgroundColor: Colors.primary,
-                                            justifyContent: "center",
-                                            alignItems: "center",
-                                            borderRadius: 99,
-                                            padding: 8,
-                                            marginRight: 10,
-                                        }}
+                            </View>
+                            <View
+                                style={{
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    borderRadius: 10,
+                                    borderWidth: 1,
+                                    borderColor: Colors.light,
+                                    paddingVertical: 10,
+                                    paddingHorizontal: 15,
+                                    gap: 5,
+                                    width: 115,
+                                }}
+                            >
+                                <MaterialIcons
+                                    name="electric-bolt"
+                                    size={24}
+                                    color={Colors.grey}
+                                />
+                                <View style={{}}>
+                                    <Text
+                                        style={[Theme.Title, { paddingTop: 8 }]}
                                     >
-                                        <MaterialCommunityIcons
-                                            name="calendar-month"
-                                            size={25}
-                                            color={Colors.light}
-                                        />
-                                    </View>
-                                    <View
-                                        style={{
-                                            flexDirection: "column",
-                                            justifyContent: "center",
-                                        }}
+                                        Petrol
+                                    </Text>
+                                    <Text
+                                        style={[
+                                            Theme.ReviewText,
+                                            { color: Colors.grey },
+                                        ]}
                                     >
-                                        <Text style={Theme.Subtitle}>Year</Text>
-                                        <Text style={Theme.Caption}>
-                                            {year}
-                                        </Text>
-                                    </View>
+                                        Fuel type
+                                    </Text>
                                 </View>
+                            </View>
+                            <View
+                                style={{
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    borderRadius: 10,
+                                    borderWidth: 1,
+                                    borderColor: Colors.light,
+                                    paddingVertical: 10,
+                                    paddingHorizontal: 15,
+                                    gap: 5,
+                                    width: 115,
+                                }}
+                            >
+                                <MaterialIcons
+                                    name="co2"
+                                    size={24}
+                                    color={Colors.grey}
+                                />
+                                <View style={{}}>
+                                    <Text
+                                        style={[Theme.Title, { paddingTop: 8 }]}
+                                    >
+                                        229
+                                    </Text>
+                                    <Text
+                                        style={[
+                                            Theme.ReviewText,
+                                            { color: Colors.grey },
+                                        ]}
+                                    >
+                                        Emissions
+                                    </Text>
+                                </View>
+                            </View>
+                        </ScrollView>
+
+                        <View style={{ paddingTop: 20 }}>
+                            <Text style={[Theme.MedTitle]}>Details</Text>
+                            <View style={{ paddingTop: 10 }}>
                                 <View
                                     style={{
-                                        marginTop: 20,
-                                        gap: 15,
-                                        display: "flex",
+                                        paddingVertical: 15,
                                         flexDirection: "row",
                                         justifyContent: "space-between",
                                     }}
                                 >
-                                    <TouchableOpacity
-                                        onPress={() => {}}
-                                        style={{
-                                            backgroundColor: Colors.offgrey,
-                                            height: 50,
-                                            borderRadius: 50,
-                                            flex: 1,
-                                            display: "flex",
-                                            justifyContent: "center",
-                                            alignItems: "center",
-                                        }}
+                                    <Text
+                                        style={[
+                                            Theme.BodySecondary,
+                                            { color: Colors.grey },
+                                        ]}
                                     >
-                                        <Text
-                                            style={{
-                                                fontFamily: "font-b",
-                                                fontSize: 16,
-                                                color: Colors.dark,
-                                                textAlign: "center",
-                                                lineHeight: 50,
-                                            }}
-                                        >
-                                            Run Check
-                                        </Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity
-                                        onPress={() => {}}
-                                        style={{
-                                            backgroundColor: Colors.offgrey,
-                                            height: 50,
-                                            borderRadius: 50,
-                                            flex: 1,
-                                            display: "flex",
-                                            justifyContent: "center",
-                                            alignItems: "center",
-                                        }}
-                                    >
-                                        <Text
-                                            style={{
-                                                fontFamily: "font-b",
-                                                fontSize: 16,
-                                                color: Colors.dark,
-                                                textAlign: "center",
-                                                lineHeight: 50,
-                                            }}
-                                        >
-                                            More Stats
-                                        </Text>
-                                    </TouchableOpacity>
+                                        Exterior Colour
+                                    </Text>
+                                    <Text style={[Theme.BodyText]}>
+                                        {color}
+                                    </Text>
                                 </View>
+                                <Divider />
+                                <View
+                                    style={{
+                                        paddingVertical: 15,
+                                        flexDirection: "row",
+                                        justifyContent: "space-between",
+                                    }}
+                                >
+                                    <Text
+                                        style={[
+                                            Theme.BodySecondary,
+                                            { color: Colors.grey },
+                                        ]}
+                                    >
+                                        Engine Size
+                                    </Text>
+                                    <Text style={[Theme.BodyText]}>
+                                        {engine_size}cc
+                                    </Text>
+                                </View>
+                                <Divider />
+                                <View
+                                    style={{
+                                        paddingVertical: 15,
+                                        flexDirection: "row",
+                                        justifyContent: "space-between",
+                                    }}
+                                >
+                                    <Text
+                                        style={[
+                                            Theme.BodySecondary,
+                                            { color: Colors.grey },
+                                        ]}
+                                    >
+                                        ULEZ Complient
+                                    </Text>
+                                    <Text style={[Theme.BodyText]}>True</Text>
+                                </View>
+                                <Divider />
                             </View>
                         </View>
 
@@ -616,7 +549,7 @@ const VehicleDetails = () => {
                                     Description
                                 </Text>
                                 {description &&
-                                    user_id === session?.user?.id && (
+                                    user_id === authState?.userId && (
                                         <TouchableOpacity
                                             onPress={() => {
                                                 router.push({
@@ -642,7 +575,7 @@ const VehicleDetails = () => {
                                     <Text style={Theme.BodyText}>
                                         {description}
                                     </Text>
-                                ) : user_id === session?.user?.id ? (
+                                ) : user_id === authState?.userId ? (
                                     <TouchableOpacity
                                         onPress={() => {
                                             router.push(
@@ -680,7 +613,7 @@ const VehicleDetails = () => {
                             </View>
                         </View>
 
-                        {user_id === session?.user?.id && (
+                        {user_id === authState?.userId && (
                             <View
                                 style={[
                                     Theme.Container,
@@ -717,7 +650,9 @@ const VehicleDetails = () => {
                                     )}
                                 </View>
                                 <View>
-                                    {logs && logs.length > 0 ? (
+                                    {logs &&
+                                    logs.length > 0 &&
+                                    !isLoadingLogs ? (
                                         <>
                                             <FlashList
                                                 decelerationRate={"fast"}
@@ -727,7 +662,7 @@ const VehicleDetails = () => {
                                                 // onRefresh={() => refetch()}
                                                 // refreshing={isLoading}
                                                 data={logs}
-                                                keyExtractor={(item) =>
+                                                keyExtractor={(item: any) =>
                                                     item.id.toString()
                                                 }
                                                 estimatedItemSize={72}
@@ -771,9 +706,10 @@ const VehicleDetails = () => {
                                                             >
                                                                 {
                                                                     LogbookTypes[
-                                                                        item.category -
-                                                                            1
-                                                                    ].icon
+                                                                        parseInt(
+                                                                            item.category
+                                                                        ) - 1
+                                                                    ]?.icon
                                                                 }
                                                             </View>
                                                             <View

@@ -6,12 +6,10 @@ import {
     TouchableOpacity,
     ScrollView,
     TextInput,
-    Alert,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useAuth } from "@/providers/AuthProvider";
-import { useQuery } from "@tanstack/react-query";
 import * as FileSystem from "expo-file-system";
 import * as ImagePicker from "expo-image-picker";
 import { SaveFormat, manipulateAsync } from "expo-image-manipulator";
@@ -27,11 +25,10 @@ import Animated, {
 } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
 import { Theme } from "@/constants/Styles";
-import { Button, Image } from "react-native-elements";
+import { Image } from "react-native-elements";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import { getVehicleDetails } from "@/api/getVehicleData";
-import { supabase } from "@/lib/supabase";
-import { decode } from "base64-arraybuffer";
+import axios from "axios";
+import uuid from "react-native-uuid";
 
 const imgDir = FileSystem.documentDirectory + "images/";
 
@@ -64,7 +61,7 @@ const NewVehicle = () => {
         taxDate: string;
         motDate: string;
     }>();
-    const { session } = useAuth();
+    const { authState } = useAuth();
     const router = useRouter();
 
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -76,27 +73,28 @@ const NewVehicle = () => {
         { localImage: string; serverImage?: string }[]
     >([]);
 
-    const uploadImage = async (uri: string) => {
-        const base64 = await FileSystem.readAsStringAsync(uri, {
-            encoding: "base64",
-        });
-        const filePath = `${
-            session?.user?.id
-        }/${id}/${new Date().getTime()}.jpeg`;
-
+    const uploadImage = async (uri: string, id: string) => {
         try {
-            const { data, error } = await supabase.storage
-                .from("vehicleimages")
-                .upload(filePath, decode(base64), {
-                    contentType: "image/jpeg",
-                });
+            // TODO: Fix this to be the actual file name and type
+            const formData = new FormData();
+            formData.append("image", {
+                uri: uri,
+                name: `${uuid.v4()}.jpeg`,
+                type: "image/jpeg",
+            } as any);
 
-            if (data) {
-                const { data: url, error } = await supabase.storage
-                    .from("vehicleimages")
-                    .createSignedUrl(filePath, 600000000000);
+            console.log(id);
+            console.log("FOO");
 
-                return url?.signedUrl;
+            const res = await axios.post(
+                `${
+                    process.env.EXPO_PUBLIC_API_URL
+                }/api/v1/garage/vehicle/${id.toString()}/uploadImage`,
+                formData
+            );
+
+            if (res.status === 200) {
+                return res.data;
             }
         } catch (error) {
             console.warn(error);
@@ -145,28 +143,12 @@ const NewVehicle = () => {
                     return savedImage;
                 })
             );
+
             setImages((prevImages: any) => [
                 ...prevImages,
-                ...savedImages.map((image) => ({ localImage: image })),
-            ]);
-            const uploadedImages = await Promise.all(
-                savedImages.map(async (savedImage: any) => {
-                    return await uploadImage(savedImage);
-                })
-            );
-
-            const image_urls: string[] = [];
-            for (const item of uploadedImages) {
-                image_urls.push(item!);
-            }
-
-            const updatedImages = savedImages.map((savedImage, index) => ({
-                localImage: savedImage,
-                serverImage: image_urls[index],
-            }));
-            setImages((prevImages: any) => [
-                ...prevImages.filter((image: any) => image.serverImage != null),
-                ...updatedImages,
+                ...savedImages.map((image) => ({
+                    localImage: image,
+                })),
             ]);
 
             setIsUploading(false);
@@ -202,19 +184,31 @@ const NewVehicle = () => {
             description: values.description,
             images: values.images,
             make,
-            year,
-            engine_size: engineSize,
+            year: parseInt(year),
+            engine_size: parseInt(engineSize),
             color,
             registered,
             tax_date: taxDate,
             mot_date: motDate,
         };
 
-        const { error } = await supabase
-            .from("user_vehicles")
-            .insert(newVehicle);
+        const res = await axios.post(
+            `${process.env.EXPO_PUBLIC_API_URL}/api/v1/garage/vehicle`,
+            {
+                ...newVehicle,
+            }
+        );
 
-        if (!error) {
+        if (res.data != 0) {
+            images.map(async (savedImage: any) => {
+                await uploadImage(
+                    savedImage.localImage,
+                    res.data.vehicle_id.toString()
+                );
+            });
+        }
+
+        if (res.status === 201) {
             router.navigate("/");
         }
     };
@@ -349,29 +343,7 @@ const NewVehicle = () => {
                                                         borderRadius: 10,
                                                     }}
                                                 />
-                                                {!image.serverImage && (
-                                                    <View
-                                                        style={{
-                                                            position:
-                                                                "absolute",
-                                                            top: 0,
-                                                            bottom: 0,
-                                                            left: 0,
-                                                            right: 0,
-                                                            backgroundColor:
-                                                                "rgba(255, 255, 255, 0.483)", // Adjust the background color and opacity as needed
-                                                            alignItems:
-                                                                "center",
-                                                            justifyContent:
-                                                                "center",
-                                                        }}
-                                                    >
-                                                        <ActivityIndicator
-                                                            size="large"
-                                                            color="#FFF"
-                                                        />
-                                                    </View>
-                                                )}
+
                                                 <TouchableOpacity
                                                     style={{
                                                         position: "absolute",

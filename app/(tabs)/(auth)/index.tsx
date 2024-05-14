@@ -5,33 +5,32 @@ import {
     TouchableOpacity,
     LayoutAnimation,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Animated, { FadeInLeft, FadeOutLeft } from "react-native-reanimated";
 import { Theme } from "@/constants/Styles";
 import Colors from "@/constants/Colors";
 import { router } from "expo-router";
 import { useAuth } from "@/providers/AuthProvider";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
 import Loader from "@/components/Loader/Loader";
 import { StatusBar } from "expo-status-bar";
 import { FlashList } from "@shopify/flash-list";
 import MyVehicle from "@/components/Garage/MyVehicle";
+import axios from "axios";
 
 const index = () => {
     const [fleetHeight, setFleetHeight] = useState<number | undefined>(
         undefined
     );
 
-    const { session } = useAuth();
-
     const fetchUserVehicle = async () => {
-        const { data, error } = await supabase
-            .from("user_vehicles")
-            .select()
-            .eq("user_id", session?.user?.id);
+        const res = await axios.get(
+            `${process.env.EXPO_PUBLIC_API_URL}/api/v1/garage`
+        );
 
-        return data;
+        if (res.data) {
+            return res.data;
+        }
     };
 
     const { data, isLoading, error, isError, refetch } = useQuery({
@@ -75,12 +74,12 @@ const index = () => {
                 onLayout={(e) => {
                     if (fleetHeight) {
                         e.nativeEvent.layout.height < fleetHeight &&
-                            setFleetHeight(e.nativeEvent.layout.height / 2.5);
+                            setFleetHeight(e.nativeEvent.layout.height / 2.2);
                     } else {
                         LayoutAnimation.configureNext(
                             LayoutAnimation.Presets.easeInEaseOut
                         );
-                        setFleetHeight(e.nativeEvent.layout.height / 2.5);
+                        setFleetHeight(e.nativeEvent.layout.height / 2.2);
                     }
                 }}
             >
@@ -124,7 +123,7 @@ const index = () => {
                             onRefresh={() => refetch()}
                             refreshing={isLoading}
                             data={data}
-                            keyExtractor={(item) => item.id.toString()}
+                            keyExtractor={(item: any) => item?.id?.toString()}
                             showsVerticalScrollIndicator={false}
                             renderItem={({ item }) => (
                                 <MyVehicle

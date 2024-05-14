@@ -11,13 +11,11 @@ import {
 import React, { useState } from "react";
 import { useAuth } from "@/providers/AuthProvider";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
-import { supabase } from "@/lib/supabase";
-import Animated, { FadeInLeft } from "react-native-reanimated";
 import { Theme } from "@/constants/Styles";
 import Colors from "@/constants/Colors";
 import { useRouter } from "expo-router";
-import { useQuery } from "@tanstack/react-query";
-import { getVehicleDetails } from "@/api/getVehicleData";
+import axios from "axios";
+import { VehicleRequest } from "@/types/vehiclerequest";
 
 type FormInputs = {
     registration: string;
@@ -31,7 +29,7 @@ const getVehicleRegisteredDate = async (motDate: string) => {
 };
 
 const registration = () => {
-    const { session } = useAuth();
+    const { authState } = useAuth();
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -55,31 +53,31 @@ const registration = () => {
         setIsSubmitting(true);
         setError(null);
         try {
-            const res = await getVehicleDetails(inputData.registration);
+            const res = await axios.get(
+                `${process.env.EXPO_PUBLIC_API_URL}/api/v1/vehicle/${inputData.registration}/getDetails`
+            );
 
-            const { count } = await supabase
-                .from("user_vehicles")
-                .select("*", { count: "exact", head: true })
-                .eq("user_id", session?.user?.id)
-                .eq("registration", inputData.registration);
+            const vehicleData: VehicleRequest = res.data;
 
-            if (count && count > 0) {
+            const exists = await axios.get(
+                `${process.env.EXPO_PUBLIC_API_URL}/api/v1/garage/vehicle/${inputData.registration}/exists`
+            );
+
+            if (exists.data) {
                 throw new Error("Vehicle already added");
             }
 
             router.push({
                 pathname: `/new-vehicle/${inputData.registration}`,
                 params: {
-                    model: res.model,
-                    make: res.make,
-                    year: res.yearOfManufacture,
-                    engineSize: res.engineCapacity,
-                    color: res.primaryColour,
-                    registered: res?.firstUsedDate,
-                    taxDate: res?.taxDueDate ? res?.taxDueDate : res?.taxStatus,
-                    motDate: res?.motExpiryDate
-                        ? res?.motExpiryDate
-                        : res?.motTestExpiryDate,
+                    model: vehicleData.model,
+                    make: vehicleData.make,
+                    year: vehicleData.year,
+                    engineSize: vehicleData.engine_size,
+                    color: vehicleData.color,
+                    registered: vehicleData?.registered,
+                    taxDate: vehicleData?.tax_date,
+                    motDate: vehicleData?.mot_date,
                 },
             });
 
