@@ -73,7 +73,7 @@ const NewVehicle = () => {
         { localImage: string; serverImage?: string }[]
     >([]);
 
-    const uploadImage = async (uri: string, id: number) => {
+    const uploadImage = async (uri: string, id: string) => {
         try {
             // TODO: Fix this to be the actual file name and type
             const formData = new FormData();
@@ -83,8 +83,13 @@ const NewVehicle = () => {
                 type: "image/jpeg",
             } as any);
 
+            console.log(id);
+            console.log("FOO");
+
             const res = await axios.post(
-                `${process.env.EXPO_PUBLIC_API_URL}/api/v1/garage/vehicle/${id}/uploadImage`,
+                `${
+                    process.env.EXPO_PUBLIC_API_URL
+                }/api/v1/garage/vehicle/${id.toString()}/uploadImage`,
                 formData
             );
 
@@ -196,7 +201,10 @@ const NewVehicle = () => {
 
         if (res.data != 0) {
             images.map(async (savedImage: any) => {
-                await uploadImage(savedImage.localImage, res.data.vehicle_id);
+                await uploadImage(
+                    savedImage.localImage,
+                    res.data.vehicle_id.toString()
+                );
             });
         }
 

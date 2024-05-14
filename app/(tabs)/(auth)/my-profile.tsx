@@ -78,9 +78,9 @@ const MyProfile = () => {
         return <Loader />;
     }
 
-    if (isError) {
-        return <Text>{error.message}</Text>;
-    }
+    // if (isError) {
+    //     return <Text>{error.message}</Text>;
+    // }
 
     const uploadImage = async (uri: string) => {
         try {
@@ -172,7 +172,7 @@ const MyProfile = () => {
             await supabase
                 .from("users")
                 .update({ avatar: image_urls[0] })
-                .eq("id", profile.id);
+                .eq("id", profile?.id);
 
             setImages((prevImages) => [
                 ...prevImages.filter((image) => image.serverImage != null),
@@ -182,7 +182,7 @@ const MyProfile = () => {
     };
 
     const shareProfileUrl = async () => {
-        await Clipboard.setStringAsync(`logbook://profile/${profile.user_id}`);
+        await Clipboard.setStringAsync(`logbook://profile/${profile?.user_id}`);
     };
 
     return (
@@ -318,7 +318,7 @@ const MyProfile = () => {
                                 gap: 5,
                             }}
                         >
-                            <Text style={Theme.Title}>{profile.name}</Text>
+                            <Text style={Theme.Title}>{profile?.name}</Text>
 
                             <View
                                 style={{
@@ -343,11 +343,11 @@ const MyProfile = () => {
                                     }}
                                 >
                                     <Text style={[Theme.BodyText]}>
-                                        {kFormatter(profile.followers)}{" "}
+                                        {kFormatter(profile?.followers)}{" "}
                                         followers
                                     </Text>
                                     <Text style={[Theme.BodyText]}>
-                                        {kFormatter(profile.following)}{" "}
+                                        {kFormatter(profile?.following)}{" "}
                                         following
                                     </Text>
                                 </View>
@@ -356,7 +356,7 @@ const MyProfile = () => {
                     </View>
                     {profile?.bio && (
                         <Text style={[Theme.BodyText, { color: Colors.grey }]}>
-                            {profile.bio}
+                            {profile?.bio}
                         </Text>
                     )}
                 </View>
@@ -385,11 +385,11 @@ const MyProfile = () => {
                         }}
                         onPress={() =>
                             router.push({
-                                pathname: `/edit-profile/${profile.id}`,
+                                pathname: `/edit-profile/${profile?.id}`,
                                 params: {
-                                    firstname: profile.name,
-                                    bio: profile.bio,
-                                    public: profile.public,
+                                    firstname: profile?.name,
+                                    bio: profile?.bio,
+                                    public: profile?.public,
                                 },
                             })
                         }
