@@ -4,7 +4,8 @@
 	<li><strong>Framework:</strong> React Native</li>
 	<li><strong>Tooling:</strong> Expo</li>
 	<li><strong>Language:</strong> TypeScript</li>
-	<li><strong>Database:</strong> Supabase</li>
+	<li><strong>Database:</strong> MySQL</li>
+	<li><strong>Backend:</strong> Golang</li>
 </ul>
 
 <h2>Credits</h2>
